@@ -1,0 +1,8 @@
+./GARBAGE_URL
+./cp-mobile-ui/en_US/deploy/metaplace/ipad2/assets/catalog/igloo/igloo_page09_bg.png
+http://media8.clubpenguin.com/mobile/cp-mobile-ui/en_US/deploy/metaplace/ipad2/assets/catalog/igloo/igloo_bc_bg.png
+./cp-mobile-ui/en_US/deploy/metaplace/ipad2/assets/catalog/igloo/igloo_page02_bg.png
+./cp-mobile-ui/en_US/deploy/metaplace/ipad2/assets/catalog
+./cp-mobile-ui/en_US/deploy/metaplace/ipad2/assets/catalog/igloo/
+./GARBAGE_URL2
+http://media8.clubpenguin.com/mobile/world/igloo/de_DE/deploy/renderer/furniture/ig_furniture_99_superherostageposter_wall/ig_furniture_99_superherostageposter_wall_r3_v1.png

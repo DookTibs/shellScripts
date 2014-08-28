@@ -1,0 +1,27 @@
+#!/bin/sh
+
+if [ -z "$CHROMIX" ]
+then
+   cat <<EOF
+Error: \$CHROMIX is not set.
+
+Set the CHROMIX environment variable to the main installation dir of the chromix project.
+For example, put something like the following in your startup scripts:
+
+export CHROMIX=\$HOME/local/project/chromix/
+EOF
+   exit 1
+fi >&2
+
+if ! [ -r "$CHROMIX" ]
+then
+   cat <<EOF
+Error: \$CHROMIX does not exist or is not readable: $CHROMIX
+EOF
+   exit 1
+fi >&2
+
+cd "$CHROMIX"
+
+exec node script/chromix.js "$@"
+

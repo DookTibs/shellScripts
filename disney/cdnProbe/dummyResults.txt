@@ -1,0 +1,11 @@
+Unable to retrieve the following files from the CDN; made 3 attempt(s):
+START TIME: Wed Aug 21 12:01:20 PDT 2013
+301
+	TCP_MISS	./cp-mobile-ui/en_US/deploy/metaplace/ipad2/assets/catalog
+403
+	TCP_MISS	./cp-mobile-ui/en_US/deploy/metaplace/ipad2/assets/catalog/igloo/
+404
+	TCP_MISS	./GARBAGE_URL
+	TCP_MISS	./GARBAGE_URL2
+	TCP_NEGATIVE_HIT	http://media8.clubpenguin.com/mobile/world/igloo/de_DE/deploy/renderer/furniture/ig_furniture_99_superherostageposter_wall/ig_furniture_99_superherostageposter_wall_r3_v1.png
+END TIME: Wed Aug 21 12:01:25 PDT 2013
