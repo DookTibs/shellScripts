@@ -67,10 +67,13 @@ do
     if read line <$namedPipe; then
         echo "READ LINE FROM NETCAT: [${line}]"
         if [[ "$line" == 'random' ]]; then
-		echo "command 'random' means reload random.org..."
-		chromix with 'random.org' reload
-	else
-		echo "(unsupported command)"
+			echo "command 'random' means reload random.org..."
+			chromix with 'random.org' reload
+        elif [[ "$line" == 'carleton' ]]; then
+			echo "command 'carleton' means reload carleton.edu"
+			chromix with 'carleton.edu' reload
+		else
+			echo "(unsupported command)"
         fi
     fi
 done
