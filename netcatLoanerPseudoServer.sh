@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# DEPRECATED - I BASICALLY NEVER USE THIS THING. keeping it around as it was interesting
+# and led to a better solution, and the first time I really used netcat.
+
 # NOTE - this script runs in a loop - kick it off in its own terminal and then
 # CTRL-C it to stop it (it will perform some cleanup when cancelled this way)
 
@@ -28,7 +31,7 @@
 # 
 # on a per-loaner basis I can set what commands I care about, see "random" below as an example
 
-# This script creates a fifo (named pipe) and then runs netcat on port 2999, redirecting output
+# This script creates a fifo (named pipe) and then runs netcat on port 4099, redirecting output
 # to this named pipe. Then it reads commands coming over netcat and does something with them.
 #
 # if one were completely trusting, could just pass these along to bash. In our case, we'll listen
@@ -38,12 +41,12 @@
 # this is hopefully not too dangerous...
 
 # PART ONE - create the named pipe
-namedPipe="/tmp/netcat2999"
+namedPipe="/tmp/netcat4099"
 rm ${namedPipe}
 mkfifo ${namedPipe}
 
 # PART TWO - kick off my listeners
-nc -k -l 2999 > ${namedPipe} &
+nc -k -l 4099 > ${namedPipe} &
 netcatPid=$!
 
 chromix-server &
@@ -67,13 +70,13 @@ do
     if read line <$namedPipe; then
         echo "READ LINE FROM NETCAT: [${line}]"
         if [[ "$line" == 'random' ]]; then
-			echo "command 'random' means reload random.org..."
-			chromix with 'random.org' reload
-        elif [[ "$line" == 'carleton' ]]; then
-			echo "command 'carleton' means reload carleton.edu"
-			chromix with 'carleton.edu' reload
-		else
-			echo "(unsupported command)"
+		echo "command 'random' means reload random.org..."
+		chromix with 'random.org' reload
+        elif [[ "$line" == 'news2015' ]]; then
+		echo "command 'news2015' means reload news2015"
+		chromix with 'news2015' reload
+	else
+		echo "(unsupported command)"
         fi
     fi
 done
