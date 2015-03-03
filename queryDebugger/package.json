@@ -1,0 +1,14 @@
+{
+  "name": "queryDebugger",
+  "version": "0.0.1",
+  "description": "Utility that nicely formats reason queries and adds some helpful debugging info",
+  "main": "queryDebugger.sh",
+  "dependencies": {
+	"exec-sync": "~0.1.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Tom Feiler"
+}
