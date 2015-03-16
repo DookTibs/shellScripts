@@ -26,11 +26,4 @@ WebLookupHelper.prototype.fetchData = function(keyword) {
 	return data;
 }
 
-WebLookupHelper.prototype.processReturnedData = function(data) {
-	var rv = data;
-	rv = rv.replace(/[\s\S]*Edit Report a Bug\n*/, "", "g");
-	rv = rv.replace(/User Contributed Notes[\s\S]*/, "", "g");
-	return rv;
-}
-
 module.exports = WebLookupHelper;
