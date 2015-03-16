@@ -11,6 +11,14 @@ JavascriptLookupHelper.prototype.constructUrl = function(keyword) {
 	return "http://www.w3schools.com/jsref/jsref_" + keyword.toLowerCase() + ".asp";
 }
 
+JavascriptLookupHelper.prototype.gotGoodResults = function(data, processedData) {
+	if (processedData.indexOf("JavaScriptundefined") == 0) {
+		return false;
+	} else {
+		return true;
+	}
+}
+
 JavascriptLookupHelper.prototype.processReturnedData = function(data) {
 	var rv = data;
 	rv = rv.replace(/[\s\S]*HTML Objects[\s\S]*<video>\n\nJavaScript/, "", "g");

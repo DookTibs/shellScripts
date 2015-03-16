@@ -12,6 +12,10 @@ DefaultLookupHelper.prototype.fetchData = function(keyword) {
 	return data;
 }
 
+DefaultLookupHelper.prototype.gotGoodResults = function(data, processedData) {
+	return true;
+}
+
 DefaultLookupHelper.prototype.processReturnedData = function(data) {
 	return data;
 }

@@ -22,14 +22,16 @@ try {
 }
 
 // todo - allow for multiple types of lookups (ie hit w3 first, then jquery for javascript lookups)
-if (helperClass != null) {
-	var helper = new helperClass();
+var helper = new helperClass();
 
-	// could be from the web, or a local command, or whatever
-	var data = helper.fetchData(keyword);
+// could be from the web, or a local command, or whatever
+var data = helper.fetchData(keyword);
 
-	// sometimes we want to do some post-processing
-	var processedData = helper.processReturnedData(data);
+// sometimes we want to do some post-processing
+var processedData = helper.processReturnedData(data);
 
+if (helper.gotGoodResults(data, processedData)) {
 	console.log(processedData);
+} else {
+	console.log("bad results...");
 }
