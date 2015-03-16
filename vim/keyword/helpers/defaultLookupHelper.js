@@ -7,9 +7,13 @@ function DefaultLookupHelper() {
 
 DefaultLookupHelper.prototype.fetchData = function(keyword) {
 	var cmd = "man " + keyword;
-	var data = execSync(cmd);
+	try {
+		var data = execSync(cmd);
+		return data;
+	} catch (e) {
+		return null;
+	}
 
-	return data;
 }
 
 DefaultLookupHelper.prototype.getDescription = function() {
@@ -17,7 +21,7 @@ DefaultLookupHelper.prototype.getDescription = function() {
 }
 
 DefaultLookupHelper.prototype.gotGoodResults = function(data, processedData) {
-	return true;
+	return data != null;
 }
 
 DefaultLookupHelper.prototype.processReturnedData = function(data) {
