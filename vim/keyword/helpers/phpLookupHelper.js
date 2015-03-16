@@ -8,7 +8,7 @@ function PhpLookupHelper() {
 inherits(PhpLookupHelper, WebLookupHelper);
 
 PhpLookupHelper.prototype.constructUrl = function(keyword) {
-	return "http://php.net/manual/en/function." + keyword.replace(/_/, "-", "g") + ".php";
+	return "http://php.net/manual/en/function." + keyword.replace(/_/g, "-") + ".php";
 }
 
 PhpLookupHelper.prototype.processReturnedData = function(data) {
