@@ -11,6 +11,10 @@ PhpLookupHelper.prototype.constructUrl = function(keyword) {
 	return "http://php.net/manual/en/function." + keyword.replace(/_/g, "-") + ".php";
 }
 
+PhpLookupHelper.prototype.getDescription = function() {
+	return "php.net";
+}
+
 PhpLookupHelper.prototype.gotGoodResults = function(data, processedData) {
 	var re = /The manual page you are looking for[\s\S]*is not available/;
 	var match = re.exec(processedData);

@@ -12,6 +12,10 @@ DefaultLookupHelper.prototype.fetchData = function(keyword) {
 	return data;
 }
 
+DefaultLookupHelper.prototype.getDescription = function() {
+	return "man pages";
+}
+
 DefaultLookupHelper.prototype.gotGoodResults = function(data, processedData) {
 	return true;
 }

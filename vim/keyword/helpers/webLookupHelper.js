@@ -17,6 +17,8 @@ WebLookupHelper.prototype.constructUrl = function(keyword) {
 }
 
 WebLookupHelper.prototype.fetchData = function(keyword) {
+	this.storedKeyword = keyword;
+
 	var url = this.constructUrl(keyword);
 	// console.log("url is [" + url + "]");
 	var cmd = "lynx -dump -nolist " + url;
