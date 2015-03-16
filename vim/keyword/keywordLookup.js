@@ -8,7 +8,7 @@ if (process.argv.length == 4) {
 	var context = process.argv[2];
 	var keyword	 = process.argv[3];
 } else {
-	console.log("Usage: vimKeywordLookup.js <context> <keyword>");
+	console.log("Usage: keywordLookup.js <context> <keyword>");
 	return;
 }
 
