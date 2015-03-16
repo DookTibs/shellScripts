@@ -1,0 +1,14 @@
+{
+  "name": "keyword",
+  "version": "0.0.1",
+  "description": "Utility that lets me define custom behavior for different languages for use with Vim's keyword lookup functionality",
+  "main": "vimKeywordLookup.sh",
+  "dependencies": {
+	"exec-sync": "~0.1.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Tom Feiler"
+}

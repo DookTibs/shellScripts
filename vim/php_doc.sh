@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# DEPRECATED - now use the vimKeywordLookup script
+
 # this script takes a single argument and attempts to look up a function with that name on 
 # php.net. it's most useful when used in conjunction with vim's shift-K (keyword) command, which, when
 # editing php, I have mapped to this script. Basically put your cursor over a keyword like "strtoupper" and
