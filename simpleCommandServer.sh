@@ -35,6 +35,9 @@ var cmdMaps = {
 		command: "/Users/tfeiler/development/shellScripts/vim/keyword/keywordLookup.js",
 		returnResults: true
 	},
+	"chromix": {
+		command: "chromix",
+	},
 	"random": {
 		command: "chromix",
 		params: ["with", "random.org", "reload"]
@@ -64,10 +67,12 @@ child_process.exec('source', [sensitiveBashScript], function() {
 		var mappedCmd = cmdMaps[mapKey];
 
 		if (mappedCmd != undefined) {
-			sys.puts("execing [" + mappedCmd.command + "]...");
 			// child_process.exec(mappedCmd);
 			var commandParams = mappedCmd.params ? mappedCmd.params : [];
-			var spawnedProc = child_process.spawn(mappedCmd.command, commandParams.concat(userInputParams));
+			var combinedParams = commandParams.concat(userInputParams);
+
+			sys.puts("execing [" + mappedCmd.command + "] with params [" + combinedParams + "]...");
+			var spawnedProc = child_process.spawn(mappedCmd.command, combinedParams);
 
 			spawnedProc.stderr.on('data', function(data) {
 				console.log("stderr: " + data);	
