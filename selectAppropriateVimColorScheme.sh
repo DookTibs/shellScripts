@@ -16,11 +16,16 @@
 
 # anyway, tl;dr, my .vimrc calls this script to decide what scheme to use.
 
-sshIndicator="tripoli.its.carleton.edu"
-who | grep -q $sshIndicator
-
-if [ $? -eq 1 ]; then
-	echo "solarized"
-else
+atCarleton=`echo ${HOSTNAME} | grep "carleton.edu"`
+if [ ${atCarleton} == "" ]; then
 	echo "torte"
+else
+	sshIndicator="tripoli.its.carleton.edu"
+	who | grep -q $sshIndicator
+
+	if [ $? -eq 1 ]; then
+		echo "solarized"
+	else
+		echo "torte"
+	fi
 fi
