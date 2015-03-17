@@ -10,7 +10,12 @@ var cmdMaps = {
 
 var sensitiveBashScript = process.env.HOME + "/development/configurations/bash/sensitive_data.bash";
 child_process.exec('source', [sensitiveBashScript], function() {
-	var portToListenOn = process.env._TJF_LOANER_CMDSERVER_PORT;
+	var portToListenOn;
+	if (process.argv.length == 3) {
+		portToListenOn = process.argv[2];
+	} else {
+		portToListenOn = process.env._TJF_COMMANDSERVER_PORT;
+	}
 
 	my_http.createServer(function(request,response){  
 		var mapKey = request.url.substring(1);

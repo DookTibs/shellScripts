@@ -4,7 +4,7 @@
 # the public facing shs server.
 # Optionally Reverse tunnels along the way and maps back to some port on my loaner.
 # Idea here is that I can run a server on some port on my
-# loaner (see loanerCmdServer.sh) and access it from my
+# loaner (see simpleCommandServer.sh) and access it from my
 # office machine on that port minus 2.
 # Ex, while ssh'ed into my office I should be able to do:
 # 	curl localhost:4015/thisWorks
