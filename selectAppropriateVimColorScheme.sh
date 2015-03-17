@@ -17,7 +17,7 @@
 # anyway, tl;dr, my .vimrc calls this script to decide what scheme to use.
 
 atCarleton=`echo ${HOSTNAME} | grep "carleton.edu"`
-if [ ${atCarleton} == "" ]; then
+if [ "${atCarleton}" == "" ]; then
 	echo "torte"
 else
 	sshIndicator="tripoli.its.carleton.edu"
