@@ -1,7 +1,8 @@
 #! /bin/bash
 
 if [ -z "${1}" ]; then
-	area="ventnorTfeilerReason"
+	# area="ventnorTfeilerReason"
+	area="${REASON_MOUNT_NAME}"
 else
 	area="${1}";
 fi
@@ -15,10 +16,17 @@ date
 # cd ~/remotes/wsgTfeilerReasonCore/
 # find reason_package_20140404 -name "*.php" | ctags -f phpTags -L -
 
-echo "generating tags for ventnor reason installation mounted on $area"
-# cd ~/remotes/ventnorTfeilerReason/
-cd ~/remotes/${area}/
-find . -name "*.php" | ctags -f phpTags -L -
+if [ "${area}" = "vagrant" ]; then
+	echo "generating tags for new vagrant test rig!"
+	# cd ~/development/reason/carl-web-reason/
+	cd ~/development/carleton/carleton.edu/
+	find . -name "*.php" | grep "./reason_package" | ctags -f .php_tags -L -
+else
+	echo "generating tags for ventnor reason installation mounted on $area"
+	# cd ~/remotes/ventnorTfeilerReason/
+	cd ~/remotes/${area}/
+	find . -name "*.php" | ctags -f phpTags -L -
+fi
 
 date
 echo "done!"

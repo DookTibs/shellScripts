@@ -2,7 +2,7 @@
 
 // works best if you set up ssh keys for logging in.
 // replace this next line with actual credentials
-var mysqlCmd = "ssh SSH_USERNAME@SERVER 'mysql -uMYSQL_USERNAME -pMYSQL_PASS MYSQL_INSTANCE";
+var mysqlCmd = "ssh tfeiler@ventnor.its.carleton.edu 'mysql -ureason -pica00rus cms_slote";
 
 // Ex: "cat somefile.sql | queryDebugger.sh"
 // more realistically - I've set up a function in
@@ -38,6 +38,8 @@ stdin.on('data', function(chunk) {
 });
 
 stdin.on('end', function() {
+	var lastChar = data.substr(data.length-2, 1);
+	if (lastChar != ";") { data = data.substr(0, data.length-1) + ";"; }
 	formatSql(data);
 });
 
@@ -61,7 +63,8 @@ function formatSql(data) {
 	if (orderbyClause != undefined) {
 		output += chunkAndEcho("ORDER BY", orderbyClause, /,\s*/, ",");
 	}
-	output = output.replace(/\n$/, ";");
+	// output = output.replace(/\n$/, ";");
+	output += ";";
 	console.log(output);
 }
 
@@ -84,6 +87,7 @@ function lookupDetails(chunk, passAttempt) {
 	var match = undefined;
 
 	var q = "SELECT name FROM entity WHERE id = ";
+	var postQ = "";
 	if (passAttempt == 1) {
 		re = /entity.*type.*=\s*"?(\d+)"?.*/i;
 		match = re.exec(chunk);
@@ -94,6 +98,11 @@ function lookupDetails(chunk, passAttempt) {
 		q = "SELECT name FROM allowable_relationship WHERE id = ";
 		re = /relationship.*\.type.*=\s*"?(\d+)"?.*/i;
 		match = re.exec(chunk);
+	} else if (passAttempt == 4) {
+		re = /entity.*id\s*in\s*\((.*)\).*/i;
+		match = re.exec(chunk);
+		q = "SELECT group_concat(id, \\\"=\\\", name SEPARATOR \\\", \\\") FROM entity WHERE id IN (";
+		postQ = ")";
 	} else {
 		// rv = "\t\t--giving up on pass [" + passAttempt + "]";
 		return rv;
@@ -102,7 +111,7 @@ function lookupDetails(chunk, passAttempt) {
 	if (match != undefined) {
 		var id = match[1];
 		debug("chunk [" + chunk + "], pass [" + passAttempt + "] yields id [" + id + "]");
-		cmd = mysqlCmd + " -e \"" + q + id + "\"'";
+		cmd = mysqlCmd + " -e \"" + q + id + postQ + "\"'";
 		debug("cmd is [" + cmd + "]");
 
 		cmdResults = execSync(cmd);
@@ -110,7 +119,7 @@ function lookupDetails(chunk, passAttempt) {
 		debug("results are [" + cmdResults + "]");
 
 		if (lines.length == 2) {
-			rv = "\t\t\t\t-- (" + lines[1] + ")";
+			rv = " -- (" + lines[1] + ")";
 		} else {
 			rv = lookupDetails(chunk, passAttempt+1);
 		}

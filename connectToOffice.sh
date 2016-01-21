@@ -13,7 +13,8 @@
 
 source "${HOME}/development/configurations/bash/sensitive_data.bash"
 
-ip=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'`
+# ip=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'`
+ip=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' | grep -v 192.168 | grep -v '\<10\.'`
 
 let localPort=${_TJF_LOANER_CMDSERVER_PORT}
 entryPoint="${_SSH_FROM_OUTSIDE_HOST}"

@@ -41,6 +41,11 @@ if [ -z "${remotePort}" ]; then
 	remotePort="${defaultPort}"
 fi
 
+if [ ! -d "$localMountPoint" ]; then
+	echo "Creating $localMountPoint..."
+	mkdir "$localMountPoint"
+fi
+
 # thoughts - be sure to use transform_symlinks so that you can follow those.
 #			 should I be seeing if there's a samba mount or something instead of doing all this?
 
