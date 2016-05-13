@@ -22,10 +22,10 @@ if [ "${area}" = "vagrant" ]; then
 	cd ~/development/carleton/carleton.edu/
 	find . -name "*.php" | grep "./reason_package" | ctags -f .php_tags -L -
 else
-	echo "generating tags for ventnor reason installation mounted on $area"
+	echo "generating tags for reason installation mounted on $area"
 	# cd ~/remotes/ventnorTfeilerReason/
 	cd ~/remotes/${area}/
-	find . -name "*.php" | ctags -f phpTags -L -
+	find . -name "*.php" | ctags -f .php_tags -L -
 fi
 
 date
