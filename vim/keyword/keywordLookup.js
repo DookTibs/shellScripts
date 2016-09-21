@@ -15,11 +15,14 @@ if (process.argv.length == 4) {
 for (var i = 0 ; i > -1 ; i++) { // WILL RUN FOREVER!!!
 	var pathToHelper = "./helpers/" + context + "LookupHelper";
 	if (i > 0) { pathToHelper += "_" + (i+1); }
+	console.log("try [" + i + "] / [" + pathToHelper + "]");
 
 	var helperClass = null;
 	try {
 		helperClass = require(pathToHelper);
 	} catch (e) {
+		console.log(e);
+		console.log("----------");
 		if (i == 0) {
 			console.log("\"" + context + "\" has no custom definition; using default lookup helper");
 			helperClass = require("./helpers/defaultLookupHelper");

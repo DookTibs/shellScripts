@@ -1,4 +1,4 @@
-var execSync = require("exec-sync");
+var execSync = require("sync-exec");
 
 // default behavior - call "man" on the keyword
 

@@ -1,4 +1,4 @@
-var execSync = require("exec-sync");
+var execSync = require("sync-exec");
 
 // base class for lookup helpers that need to go out to the internet to fetch documentation
 
@@ -25,7 +25,7 @@ WebLookupHelper.prototype.fetchData = function(keyword) {
 	// console.log("cmd is [" + cmd + "]");
 	var data = execSync(cmd);
 	// console.log(data);
-	return data;
+	return data.stdout;
 }
 
 module.exports = WebLookupHelper;
