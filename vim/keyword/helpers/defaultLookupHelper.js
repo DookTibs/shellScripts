@@ -9,7 +9,7 @@ DefaultLookupHelper.prototype.fetchData = function(keyword) {
 	var cmd = "man " + keyword;
 	try {
 		var data = execSync(cmd);
-		return data;
+		return data.stdout;
 	} catch (e) {
 		return null;
 	}
