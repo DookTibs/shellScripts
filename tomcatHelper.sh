@@ -20,25 +20,30 @@ usage() {
 	else
 		echo "No arg supplied"
 	fi
-	echo "Supported args: 'stop', 'start', 'watch'"
+	echo "Supported args: 'status', 'stop', 'start', 'watch'"
 }
+
+if [ "cygwin" = ${TOM_OS} ];then
+	processId=`procps all | grep "apache-tomcat-9.0.0.M15" | grep "\-DbaseUrl=.*localhost:8080" | awk '{ print $3 }'`
+fi
 
 if [ -z $1 ]; then
 	usage
-elif [ "${1}" == "stop" ]; then
-	if [ "cygwin" = ${TOM_OS} ];then
-		processId=`procps all | grep "apache-tomcat-9.0.0.M15" | grep "\-DbaseUrl=.*localhost:8080" | awk '{ print $3 }'`
-	fi
-
+elif [ "${1}" == "stop" ] || [ "${1}" == "status" ]; then
 	if [ -n "${processId}" ]; then
-		echo "Found Tomcat running as pid ${processId}; stopping now..."
-		
-		runTomcatCmd stop
+		echo "Tomcat is running as pid ${processId}"
+		if [ "${1}" == "stop" ]; then
+			runTomcatCmd stop
+		fi
 	else
 		echo "Tomcat does not appear to be running."
 	fi
 elif [ "${1}" == "start" ]; then
-	runTomcatCmd start
+	if [ -n "${processId}" ]; then
+		echo "Tomcat is already running as pid ${processId}"
+	else
+		runTomcatCmd start
+	fi
 elif [ "${1}" == "redeploy" ]; then
 	echo "Not yet implemented; clear out webapps/ROOT/, make sure dragon.war is up to date, etc."
 elif [ "${1}" == "watch" ]; then
