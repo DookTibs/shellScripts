@@ -6,12 +6,12 @@ if [ "cygwin" != "${TOM_OS}" ];then
 	exit 1
 fi
 
-TOMCAT_HOME=/cygdrive/c/development/tomcat/apache-tomcat-9.0.0.M15/
+# TOMCAT_HOME=/cygdrive/c/development/tomcat/apache-tomcat-9.0.0.M15/
 logfile=${TOMCAT_HOME}logs/catalina.out
 
 runTomcatCmd() {
 	if [ "${1}" == "stop" ] || [ "${1}" == "start" ]; then
-		CLASSPATH="/cygdrive/c/Program\ Files/Java/jdk1.8.0_112/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=dev,migration -DbaseUrl=http://localhost:8080 -Djava.endorsed.dirs=/cygdrive/c/development/tomcat/apache-tomcat-9.0.0.M15/endorsed -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/cygdrive/c/Program Files/Java/jdk1.8.0_112/" bash -c "/cygdrive/c/development/tomcat/apache-tomcat-9.0.0.M15/bin/catalina.sh $1"
+		CLASSPATH="/cygdrive/c/Program\ Files/Java/jdk1.8.0_112/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=prod,migration -DbaseUrl=http://localhost:8080 -Djava.endorsed.dirs=/cygdrive/c/development/tomcat/apache-tomcat-9.0.0.M15/endorsed -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/cygdrive/c/Program Files/Java/jdk1.8.0_112/" bash -c "/cygdrive/c/development/tomcat/apache-tomcat-9.0.0.M15/bin/catalina.sh $1"
 	else
 		echo "Bad arg to runTomcatCmd..."
 	fi
@@ -25,6 +25,14 @@ startTomcat() {
 	msToStart=`echo "${startLine}" | awk '{ print $(NF-1) }'`
 	prettyTime $msToStart
 	echo "Initialization completed in ${_prettyTime}"
+}
+
+stopTomcat() {
+	if [ -n "${processId}" ]; then
+		echo "Stopping running Tomcat process..."
+		runTomcatCmd stop
+		waitForStoppage
+	fi
 }
 
 processId=""
@@ -82,8 +90,7 @@ elif [ "${1}" == "stop" ] || [ "${1}" == "status" ] || [ "${1}" == "kill" ]; the
 	if [ -n "${processId}" ]; then
 		echo "Tomcat is running as pid ${processId}"
 		if [ "${1}" == "stop" ]; then
-			runTomcatCmd stop
-			waitForStoppage
+			stopTomcat
 		elif [ "${1}" == "kill" ]; then
 			echo "Killing..."
 			kill ${processId}
@@ -91,6 +98,9 @@ elif [ "${1}" == "stop" ] || [ "${1}" == "status" ] || [ "${1}" == "kill" ]; the
 	else
 		echo "Tomcat does not appear to be running."
 	fi
+elif [ "${1}" == "bounce" ]; then
+	stopTomcat
+	startTomcat
 elif [ "${1}" == "start" ]; then
 	if [ -n "${processId}" ]; then
 		echo "Tomcat is already running as pid ${processId}"
@@ -99,8 +109,8 @@ elif [ "${1}" == "start" ]; then
 	fi
 elif [ "${1}" == "redeploy" ]; then
 	echo "Rebuilding war..."
-	cd /cygdrive/c/Users/38593/workspace/icf_dragon
-	mvn package
+	cd $DRAGON_HOME
+	mvn clean package
 
 	if [ $? -ne 0 ]; then
 		echo "Error building war; not proceeding."
@@ -108,9 +118,7 @@ elif [ "${1}" == "redeploy" ]; then
 	fi
 
 	if [ -n "${processId}" ]; then
-		echo "Stopping running Tomcat process..."
-		runTomcatCmd stop
-		waitForStoppage
+		stopTomcat
 	fi
 
 	echo "Clearing out installed webapp from Tomcat..."
