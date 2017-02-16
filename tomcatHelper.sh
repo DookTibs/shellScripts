@@ -17,6 +17,16 @@ runTomcatCmd() {
 	fi
 }
 
+blinkRed() {
+	# let's blink the window red a few times so I notice that something long-running is done!
+	for i in {0..3}; do
+		tmux select-pane -P "bg=red,fg=white"
+		sleep .1 
+		tmux select-pane -P "bg=default,fg=default"
+		sleep .1
+	done
+}
+
 startTomcat() {
 	echo "Starting Tomcat"
 	runTomcatCmd start
@@ -25,6 +35,7 @@ startTomcat() {
 	msToStart=`echo "${startLine}" | awk '{ print $(NF-1) }'`
 	prettyTime $msToStart
 	echo "Initialization completed in ${_prettyTime}"
+	blinkRed
 }
 
 stopTomcat() {
@@ -65,7 +76,8 @@ prettyTime() {
 	minutes=$(expr ${seconds} / 60)
 	leftoverSeconds=$(expr ${seconds} % 60)
 	leftoverMs=$(expr ${ms} % 1000)
-	_prettyTime="${minutes}:${leftoverSeconds}.${leftoverMs}"
+	# _prettyTime="${minutes}:${leftoverSeconds}.${leftoverMs}"
+	_prettyTime=`printf "%d:%02d.%d" $minutes $leftoverSeconds $leftoverMs`
 }
 
 waitForStoppage() {
