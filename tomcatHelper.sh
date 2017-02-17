@@ -1,6 +1,8 @@
 #!/bin/bash
 # JAVA_HOME="/cygdrive/c/Program Files/Java/jdk1.8.0_112/" bash -c '/cygdrive/c/development/tomcat/apache-tomcat-9.0.0.M15/bin/catalina.sh start'
 
+source ~/development/configurations/bash/functions.bash
+
 if [ "cygwin" != "${TOM_OS}" ];then
 	echo "Not tested outside of Cygwin; quitting!"
 	exit 1
@@ -17,16 +19,6 @@ runTomcatCmd() {
 	fi
 }
 
-blinkRed() {
-	# let's blink the window red a few times so I notice that something long-running is done!
-	for i in {0..3}; do
-		tmux select-pane -P "bg=red,fg=white"
-		sleep .1 
-		tmux select-pane -P "bg=default,fg=default"
-		sleep .1
-	done
-}
-
 startTomcat() {
 	echo "Starting Tomcat"
 	runTomcatCmd start
@@ -35,7 +27,18 @@ startTomcat() {
 	msToStart=`echo "${startLine}" | awk '{ print $(NF-1) }'`
 	prettyTime $msToStart
 	echo "Initialization completed in ${_prettyTime}"
-	blinkRed
+	# blinkRed
+
+	# now we take a guess - Tomcat takes at least 2 minutes to start up if 
+	# everything went well w/ Dragon. So let's blink greenish if it took awhile. If
+	# there was a Spring error during boot, the app will not initialize correctly
+	# and Tomcat will come up faster. So if Tomcat starts up faster than that, we know
+	# it's an error, and we blink red.
+	if [ ${msToStart} -gt 120000 ]; then
+		tmux_blink colour28
+	else
+		tmux_blink red
+	fi
 }
 
 stopTomcat() {
