@@ -4,6 +4,11 @@
 # at a sensible name for the relevant repo
 branch=`git branch 2>&1 | grep '*' | sed 's/* //'`
 
+if [ "${TJF_TMUX_PANE_ASTERISK}" != "" ]; then
+	echo "${TJF_TMUX_PANE_ASTERISK}"
+	exit
+fi
+
 if [ "${branch}" == "" ]; then
 	echo "${TJF_TMUX_PANE_ASTERISK}n/a";
 else
