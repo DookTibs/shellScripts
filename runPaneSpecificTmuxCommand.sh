@@ -36,7 +36,7 @@ fi
 numSessionsAttached=`tmux ls | grep "(attached)" | wc -l | xargs` # xargs to trim whitespace
 
 if [ ${numSessionsAttached} -gt 1 ]; then
-	declare -x TJF_TMUX_PANE_ASTERISK="(warning - attached to ${numSessionsAttached} sessions) "
+	declare -x TJF_TMUX_PANE_ASTERISK="(attached to ${numSessionsAttached} sessions)"
 else
 	declare -x TJF_TMUX_PANE_ASTERISK=""
 fi
