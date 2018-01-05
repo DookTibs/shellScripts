@@ -3,12 +3,34 @@
 
 # JAVA_HOME="/cygdrive/c/Program Files/Java/jdk1.8.0_112/" bash -c '/cygdrive/c/development/tomcat/apache-tomcat-9.0.0.M15/bin/catalina.sh start'
 
+# todo - rewrite this to use python or something to be more modular. And then start using this for deployments.
+
+# this will convert to "localdev"  or "localprod" for the Spring profile...
+# dragonEnv="dev"
+# numTunnelsNeeded=2
+
+dragonEnv="prod"
+numTunnelsNeeded=1
+
+openTunnels=`checkTunnels.sh | grep ${dragonEnv}_jumpbox | wc -l`
+if [ $openTunnels -ne $numTunnelsNeeded ]; then
+	echo "$openTunnels tunnels found running through ${dragonEnv}_jumpbox instead of expected $numTunnelsNeeded"
+	echo "Make sure tunnel(s) are configured properly before proceeding (ex: 'tunnel_dragon_${dragonEnv}_start')."
+	echo "Exiting without doing anything."
+	exit 1
+fi
+
+
+
 source ~/development/configurations/bash/functions.bash
 
 if [ "cygwin" != "${TOM_OS}" ];then
 	echo "Not tested outside of Cygwin; quitting!"
 	exit 1
 fi
+
+runningTomcatVersion=`echo $TOMCAT_HOME | awk -F "/" '{print $(NF-1)}'`
+echo "Running on '$runningTomcatVersion' (Tomcat 8 is port 8088, Tomcat9 is port 8081)"
 
 # TOMCAT_HOME=/cygdrive/c/development/tomcat/apache-tomcat-9.0.0.M15/
 logfile=${TOMCAT_HOME}logs/catalina.out
@@ -20,14 +42,19 @@ runTomcatCmd() {
 		# debugging launch
 		# JPDA_ADDRESS="localhost:9005" JPDA_TRANSPORT="dt_socket" CLASSPATH="/cygdrive/c/Program\ Files/Java/jdk1.8.0_112/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=prod,migration -DbaseUrl=http://localhost:8081 -Djava.endorsed.dirs=/cygdrive/c/development/tomcat/apache-tomcat-9.0.0.M15/endorsed -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/cygdrive/c/Program Files/Java/jdk1.8.0_112/" bash -c "/cygdrive/c/development/tomcat/apache-tomcat-9.0.0.M15/bin/catalina.sh jpda $1"
 
+		# dev, prod, localdev, localprod
+
 		# standard launch
-		CLASSPATH="/cygdrive/c/Program\ Files/Java/jdk1.8.0_112/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=prod -DbaseUrl=http://localhost:8081 -Djava.endorsed.dirs=/cygdrive/c/development/tomcat/apache-tomcat-9.0.0.M15/endorsed -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/cygdrive/c/Program Files/Java/jdk1.8.0_112/" bash -c "/cygdrive/c/development/tomcat/apache-tomcat-9.0.0.M15/bin/catalina.sh $1"
+		AWS_ACCESS_KEY_ID="AKIAJHIK2TXMVBRH5FQA" AWS_SECRET_ACCESS_KEY="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" CLASSPATH="/cygdrive/c/Program\ Files/Java/jdk1.8.0_112/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=local${dragonEnv},tibs -Ddragon.tierType=web -DbaseUrl=http://localhost:8081 -Djava.endorsed.dirs=${TOMCAT_HOME}endorsed -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/cygdrive/c/Program Files/Java/jdk1.8.0_112/" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
 	else
 		echo "Bad arg to runTomcatCmd..."
 	fi
 }
 
 startTomcat() {
+	echo "Deleting Tomcat logfile..."
+	rm -f "$logfile"
+
 	echo "Starting Tomcat"
 	runTomcatCmd start
 	echo "Waiting for webapp initialization to complete..."
@@ -61,7 +88,7 @@ processId=""
 # runs and sets global var processId
 getProcessId() {
 	if [ "cygwin" = ${TOM_OS} ];then
-		processId=`procps all | grep "apache-tomcat-9.0.0.M15" | grep "\-DbaseUrl=.*localhost:8081" | awk '{ print $3 }'`
+		processId=`procps all | grep $runningTomcatVersion | grep "\-DbaseUrl=.*localhost:8081" | awk '{ print $3 }'`
 	fi
 }
 
@@ -131,17 +158,22 @@ elif [ "${1}" == "start" ]; then
 		startTomcat
 	fi
 elif [ "${1}" == "redeploy" ]; then
-	echo "Rebuilding styles..."
+	echo "Not rebuilding styles..."
 	cd $DRAGON_HOME/src/main/webapp/
-	gulp styles
-	tr -d '\r' < css/main.css > css/tempUnix.css
-	mv css/tempUnix.css css/main.css
-
+	# gulp styles
+	# tr -d '\r' < css/main.css > css/tempUnix.css
+	# mv css/tempUnix.css css/main.css
+	
 
 	#we'll assume the sass build was ok; it's not currently returning an error exit code when compilation error occurred...
 
 	echo "Rebuilding war..."
 	cd $DRAGON_HOME
+
+	# get the hash of the current commit in Git; we'll use this to name the war
+	currentHash=`git log --pretty=format:'%H' -n 1`
+	echo "Commit hash is [$currentHash]...."
+
 	mvn clean package
 
 	if [ $? -ne 0 ]; then
@@ -154,8 +186,13 @@ elif [ "${1}" == "redeploy" ]; then
 	fi
 
 	echo "Clearing out installed webapp from Tomcat..."
-	rm -rf /cygdrive/c/development/tomcat/apache-tomcat-9.0.0.M15/webapps/ROOT/
-	cp target/dragon-0.0.1-SNAPSHOT.war /cygdrive/c/development/tomcat/apache-tomcat-9.0.0.M15/webapps2
+	rm -rf ${TOMCAT_HOME}webapps/ROOT/
+	cp target/dragon-0.0.1-SNAPSHOT.war target/dragon-${currentHash}-web.war
+	cp target/dragon-0.0.1-SNAPSHOT.war target/dragon-${currentHash}-worker.war
+	cp target/dragon-0.0.1-SNAPSHOT.war ${TOMCAT_HOME}webapps2
+
+	echo "Deleting problematic .ebextensions from worker tier"
+	zip -d target/dragon-${currentHash}-worker.war .ebextensions/increase_request_timeout_eb.config .ebextensions/httpd/
 
 	startTomcat
 elif [ "${1}" == "watch" ]; then

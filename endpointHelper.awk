@@ -91,6 +91,7 @@ processingAnnotation == 1 && match($1, /)/) {
 			output = output " "
 		}
 		output = output currControllerPath
+		output = output " [" NR "]"
 
 		print output
 	}
