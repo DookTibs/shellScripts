@@ -6,11 +6,11 @@
 # todo - rewrite this to use python or something to be more modular. And then start using this for deployments.
 
 # this will convert to "localdev"  or "localprod" for the Spring profile...
-# dragonEnv="dev"
-# numTunnelsNeeded=2
+dragonEnv="dev"
+numTunnelsNeeded=2
 
-dragonEnv="prod"
-numTunnelsNeeded=1
+# dragonEnv="prod"
+# numTunnelsNeeded=1
 
 openTunnels=`checkTunnels.sh | grep ${dragonEnv}_jumpbox | wc -l`
 if [ $openTunnels -ne $numTunnelsNeeded ]; then
@@ -187,12 +187,14 @@ elif [ "${1}" == "redeploy" ]; then
 
 	echo "Clearing out installed webapp from Tomcat..."
 	rm -rf ${TOMCAT_HOME}webapps/ROOT/
-	cp target/dragon-0.0.1-SNAPSHOT.war target/dragon-${currentHash}-web.war
-	cp target/dragon-0.0.1-SNAPSHOT.war target/dragon-${currentHash}-worker.war
 	cp target/dragon-0.0.1-SNAPSHOT.war ${TOMCAT_HOME}webapps2
 
-	echo "Deleting problematic .ebextensions from worker tier"
-	zip -d target/dragon-${currentHash}-worker.war .ebextensions/increase_request_timeout_eb.config .ebextensions/httpd/
+	cp target/dragon-0.0.1-SNAPSHOT.war target/dragon-${currentHash}.war
+
+	# echo "Deleting problematic .ebextensions from worker tier"
+	# cp target/dragon-0.0.1-SNAPSHOT.war target/dragon-${currentHash}-web.war
+	# cp target/dragon-0.0.1-SNAPSHOT.war target/dragon-${currentHash}-worker.war
+	# zip -d target/dragon-${currentHash}-worker.war .ebextensions/increase_request_timeout_eb.config .ebextensions/httpd/
 
 	startTomcat
 elif [ "${1}" == "watch" ]; then
