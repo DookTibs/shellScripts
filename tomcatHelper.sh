@@ -5,6 +5,10 @@
 
 # todo - rewrite this to use python or something to be more modular. And then start using this for deployments.
 
+source sensitiveData.sh
+
+# echo "gonna use [${S3_USER_AWS_ACCESS_KEY_ID}] and [${S3_USER_AWS_SECRET_ACCESS_KEY}] (defined in sensitiveData.sh which should never get checked in..."
+
 # this will convert to "localdev"  or "localprod" for the Spring profile...
 dragonEnv="dev"
 numTunnelsNeeded=2
@@ -45,7 +49,7 @@ runTomcatCmd() {
 		# dev, prod, localdev, localprod
 
 		# standard launch
-		AWS_ACCESS_KEY_ID="AKIAJHIK2TXMVBRH5FQA" AWS_SECRET_ACCESS_KEY="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" CLASSPATH="/cygdrive/c/Program\ Files/Java/jdk1.8.0_112/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=local${dragonEnv},tibs -Ddragon.tierType=web -DbaseUrl=http://localhost:8081 -Djava.endorsed.dirs=${TOMCAT_HOME}endorsed -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/cygdrive/c/Program Files/Java/jdk1.8.0_112/" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
+		AWS_ACCESS_KEY_ID="${S3_USER_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${S3_USER_AWS_SECRET_ACCESS_KEY}" CLASSPATH="/cygdrive/c/Program\ Files/Java/jdk1.8.0_112/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=local${dragonEnv},tibs -Ddragon.tierType=web -DbaseUrl=http://localhost:8081 -Djava.endorsed.dirs=${TOMCAT_HOME}endorsed -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/cygdrive/c/Program Files/Java/jdk1.8.0_112/" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
 	else
 		echo "Bad arg to runTomcatCmd..."
 	fi
