@@ -31,15 +31,24 @@ if [ -n "$1" ]; then
 	let padWidth=${1}
 fi
 
-# readarray works in this version of bash at least...not in older versions
-readarray controllerFiles < annotationReportCache
+# readarray works in bash 4; not in older versions
+# readarray controllerFiles < annotationReportCache
+IFS=$'\n' read -d '' -r -a controllerFiles < annotationReportCache
+
+# controllerFiles=(
+	# "./src/main/java/com/icfi/dragon/web/controller/AdminController.java"
+# )
 
 # loop through the files and hand them off to the helper awk script
 for cf in "${controllerFiles[@]}"
 do
-	# strip off last character (newline)
-	cf=${cf::-1}
-	# echo "$cf"
+	# strip off last character (newline). This worked in Cygwin
+	# cf=${cf::-1}
 
-	awk -v PAD_WIDTH=${padWidth} -f ~/development/shellScripts/endpointHelper.awk $cf
+	# this works on OSX - sometimes there's a garbage cahracter, sometimes not.
+	# verify that the echo looks right
+	cf=`echo $cf | sed 's/[^a]$//'`
+	# echo "Input file: $cf"
+
+	awk -v PAD_WIDTH=${padWidth} -f ~/development/shellScripts/endpointHelper.awk "$cf"
 done

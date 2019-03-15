@@ -9,7 +9,8 @@ else
 	fi
 
 	if [ "$browser" = "chrome" ]; then
-		chromix load "$1" ; chromix with "$1" reload
+		# chromix load "$1" ; chromix with "$1" reload
+		chromix-too reload "$1"
 	elif [ "$browser" = "ff" ]; then
 		firefoxReloader.scpt "$1"
 	else

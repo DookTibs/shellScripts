@@ -10,31 +10,55 @@ source sensitiveData.sh
 # echo "gonna use [${S3_USER_AWS_ACCESS_KEY_ID}] and [${S3_USER_AWS_SECRET_ACCESS_KEY}] (defined in sensitiveData.sh which should never get checked in..."
 
 # this will convert to "localdev"  or "localprod" for the Spring profile...
-dragonEnv="dev"
-numTunnelsNeeded=2
 
-# dragonEnv="prod"
-# numTunnelsNeeded=1
+# default value
+targetEnv="sandbox"
+if [ "${2}" != "" ]; then
+	targetEnv="${2}"
+fi
 
-openTunnels=`checkTunnels.sh | grep ${dragonEnv}_jumpbox | wc -l`
-if [ $openTunnels -ne $numTunnelsNeeded ]; then
-	echo "$openTunnels tunnels found running through ${dragonEnv}_jumpbox instead of expected $numTunnelsNeeded"
-	echo "Make sure tunnel(s) are configured properly before proceeding (ex: 'tunnel_dragon_${dragonEnv}_start')."
+if [ "${targetEnv}" == "dev" ]; then
+	dragonEnv="dev"
+	tunnelGrepper="7432"
+elif [ "${targetEnv}" == "prod" ]; then
+	dragonEnv="prod"
+	tunnelGrepper="6432"
+elif [ "${targetEnv}" == "sandbox" ]; then
+	dragonEnv="sandbox"
+	tunnelGrepper="8432"
+else
+	echo "invalid environment"
+	exit 1
+fi
+
+# see https://stackoverflow.com/questions/15555838/how-to-pass-tomcat-port-number-on-command-line
+tomcatHttpPort=8081
+if [ ! -z "${3}" ]; then
+	tomcatHttpPort=${3}
+fi
+# tomcatShutdownPort=$(($tomcatHttpPort + 10))
+
+openTunnels=`checkTunnels.sh | grep "$tunnelGrepper.*_jumpbox" | wc -l`
+if [ $openTunnels -ne 1 ]; then
+	echo "$openTunnels tunnels found running for dragon env '$dragonEnv'."
+
+	echo "Make sure tunnel(s) are configured properly before proceeding. (probably tunnel_dragon_${dragonEnv}_start)"
 	echo "Exiting without doing anything."
 	exit 1
 fi
 
+actualDragonEnv="not_set"
+actualDragonEnv="local${dragonEnv}"
 
 
 source ~/development/configurations/bash/functions.bash
 
-if [ "cygwin" != "${TOM_OS}" ];then
-	echo "Not tested outside of Cygwin; quitting!"
-	exit 1
-fi
-
 runningTomcatVersion=`echo $TOMCAT_HOME | awk -F "/" '{print $(NF-1)}'`
-echo "Running on '$runningTomcatVersion' (Tomcat 8 is port 8088, Tomcat9 is port 8081)"
+echo "#################"
+echo "# env == $dragonEnv"
+echo "#################"
+# echo "Running on '$runningTomcatVersion' (Tomcat 8 is port 8088, Tomcat9 is port 8081)"
+echo "Running on '$runningTomcatVersion' (port $tomcatHttpPort)"
 
 # TOMCAT_HOME=/cygdrive/c/development/tomcat/apache-tomcat-9.0.0.M15/
 logfile=${TOMCAT_HOME}logs/catalina.out
@@ -49,7 +73,12 @@ runTomcatCmd() {
 		# dev, prod, localdev, localprod
 
 		# standard launch
-		AWS_ACCESS_KEY_ID="${S3_USER_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${S3_USER_AWS_SECRET_ACCESS_KEY}" CLASSPATH="/cygdrive/c/Program\ Files/Java/jdk1.8.0_112/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=local${dragonEnv},tibs -Ddragon.tierType=web -DbaseUrl=http://localhost:8081 -Djava.endorsed.dirs=${TOMCAT_HOME}endorsed -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/cygdrive/c/Program Files/Java/jdk1.8.0_112/" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
+		# AWS_ACCESS_KEY_ID="${S3_USER_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${S3_USER_AWS_SECRET_ACCESS_KEY}" CLASSPATH="/cygdrive/c/Program\ Files/Java/jdk1.8.0_112/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=${actualDragonEnv},tibs -Ddragon.tierType=web -DbaseUrl=http://localhost:8081 -Djava.endorsed.dirs=${TOMCAT_HOME}endorsed -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/cygdrive/c/Program Files/Java/jdk1.8.0_112/" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
+		# AWS_ACCESS_KEY_ID="${S3_USER_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${S3_USER_AWS_SECRET_ACCESS_KEY}" CLASSPATH="/cygdrive/c/Program\ Files/Java/jdk1.8.0_161/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=${actualDragonEnv},tibs -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Djava.endorsed.dirs=${TOMCAT_HOME}endorsed -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/cygdrive/c/Program Files/Java/jdk1.8.0_161/" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
+
+
+		# current command as of 20180530
+		AWS_ACCESS_KEY_ID="${S3_USER_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${S3_USER_AWS_SECRET_ACCESS_KEY}" CLASSPATH="/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=${actualDragonEnv},tibs,xmigration -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Djava.endorsed.dirs=${TOMCAT_HOME}endorsed -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
 	else
 		echo "Bad arg to runTomcatCmd..."
 	fi
@@ -68,12 +97,12 @@ startTomcat() {
 	echo "Initialization completed in ${_prettyTime}"
 	# blinkRed
 
-	# now we take a guess - Tomcat takes at least 2 minutes to start up if 
+	# now we take a guess - Tomcat takes at least 45 seconds to start up if 
 	# everything went well w/ Dragon. So let's blink greenish if it took awhile. If
 	# there was a Spring error during boot, the app will not initialize correctly
 	# and Tomcat will come up faster. So if Tomcat starts up faster than that, we know
 	# it's an error, and we blink red.
-	if [ ${msToStart} -gt 120000 ]; then
+	if [ ${msToStart} -gt 45000 ]; then
 		tmux_blink colour28
 	else
 		tmux_blink red
@@ -82,7 +111,7 @@ startTomcat() {
 
 stopTomcat() {
 	if [ -n "${processId}" ]; then
-		echo "Stopping running Tomcat process..."
+		echo "Stopping running Tomcat process (port ${tomcatShutdownPort})..."
 		runTomcatCmd stop
 		waitForStoppage
 	fi
@@ -92,7 +121,11 @@ processId=""
 # runs and sets global var processId
 getProcessId() {
 	if [ "cygwin" = ${TOM_OS} ];then
-		processId=`procps all | grep $runningTomcatVersion | grep "\-DbaseUrl=.*localhost:8081" | awk '{ print $3 }'`
+		processId=`procps all | grep $runningTomcatVersion | grep "\-DbaseUrl=.*localhost:${tomcatHttpPort}" | awk '{ print $3 }'`
+		# echo "got process id [$processId] from [$runningTomcatVersion]/[$tomcatHttpPort]"
+	else
+		# OSX
+		processId=`ps -eax | grep $runningTomcatVersion | grep "\-DbaseUrl=.*localhost:${tomcatHttpPort}" | awk '{ print $1 }'`
 	fi
 }
 
@@ -203,6 +236,7 @@ elif [ "${1}" == "redeploy" ]; then
 	startTomcat
 elif [ "${1}" == "watch" ]; then
 	tail -F ${logfile}
+	# rainbow --red=EANDK tail -F ${logfile}
 else
 	usage "${1}"
 fi
