@@ -11,34 +11,35 @@ else
 	fi
 fi
 
+let counter=0
+for loopFile in "$@"
+do
+	if [ $counter -gt 0 ]; then
+		if [ -f $loopFile ]; then
+			fileToProcess=$loopFile
 
-if [ -z $2 ]; then
-	echo "no file specified"
-	exit 1
-else
-	if [ -f $2 ]; then
-		fileToProcess=$2
-	else
-		echo "invalid input file specified"
-		exit 1
+			nameAndDot=`echo "$fileToProcess" | sed -e 's-\(.*\)\.\(.*\)-\1.-'`
+			extension=`echo "$fileToProcess" | sed -e 's-\(.*\)\.\(.*\)-\2-'`
+
+			if [ "$caseToUse" == "upper" ]; then
+				fixedExtension=`echo "$extension" | tr '[:lower:]' '[:upper:]'`
+			else
+				fixedExtension=`echo "$extension" | tr '[:upper:]' '[:lower:]'`
+			fi
+
+			targetFilename="${nameAndDot}${fixedExtension}"
+
+			if [ "$targetFilename" == "$fileToProcess" ]; then
+				echo "no rename needed for $fileToProcess..."
+			else
+				echo "renaming [$fileToProcess] to [$targetFilename]..."
+				mv "$fileToProcess" "$targetFilename"
+			fi
+		else
+			echo "invalid input file specified"
+		fi
 	fi
-fi
 
-nameAndDot=`echo "$fileToProcess" | sed -e 's-\(.*\)\.\(.*\)-\1.-'`
-extension=`echo "$fileToProcess" | sed -e 's-\(.*\)\.\(.*\)-\2-'`
+	let counter=$counter+1
+done
 
-if [ "$caseToUse" == "upper" ]; then
-	fixedExtension=`echo "$extension" | tr '[:lower:]' '[:upper:]'`
-else
-	fixedExtension=`echo "$extension" | tr '[:upper:]' '[:lower:]'`
-fi
-
-targetFilename="${nameAndDot}${fixedExtension}"
-
-if [ "$targetFilename" == "$fileToProcess" ]; then
-	echo "no rename needed"
-	exit
-fi
-
-echo "renaming [$fileToProcess] to [$targetFilename]..."
-mv "$fileToProcess" "$targetFilename"
