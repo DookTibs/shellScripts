@@ -41,6 +41,7 @@ def processLine(source, counter, contents):
 
 if __name__ == "__main__":
 	lineCounter=0
+	# print("running: [%s], [%s]" % (len(sys.argv), sys.argv))
 	if len(sys.argv) == 2:
 		with open(sys.argv[1]) as f:
 			for line in f:
