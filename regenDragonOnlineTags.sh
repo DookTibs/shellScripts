@@ -1,4 +1,14 @@
 #! /bin/bash
+
+
+# on OSX I do:
+# 1. "brew install global" -- this installs gtags
+# 2. "brew unlink ctags" (maybe needed, not sure)
+# 3. "brew install --HEAD universal-ctags/universal-ctags/universal-ctags" # this installs universal ctags
+
+
+
+
 echo -n "Regenerating ctags for DRAGON Online..."
 cd $DRAGON_HOME/src/main/java/
 ctags -f .dragonOnlineJavaTags -R .

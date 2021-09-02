@@ -20,8 +20,8 @@ fi
 if [ "${targetEnv}" == "dev" ]; then
 	dragonEnv="dev"
 	tunnelGrepper="7432"
-elif [ "${targetEnv}" == "prod" ]; then
-	dragonEnv="prod"
+elif [ "${targetEnv}" == "oldprod" ]; then
+	dragonEnv="oldprod"
 	tunnelGrepper="9432"
 elif [ "${targetEnv}" == "prod2021" ]; then
 	dragonEnv="prod"
@@ -79,24 +79,31 @@ runTomcatCmd() {
 		# AWS_ACCESS_KEY_ID="${S3_USER_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${S3_USER_AWS_SECRET_ACCESS_KEY}" CLASSPATH="/cygdrive/c/Program\ Files/Java/jdk1.8.0_112/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=${actualDragonEnv},tibs -Ddragon.tierType=web -DbaseUrl=http://localhost:8081 -Djava.endorsed.dirs=${TOMCAT_HOME}endorsed -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/cygdrive/c/Program Files/Java/jdk1.8.0_112/" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
 		# AWS_ACCESS_KEY_ID="${S3_USER_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${S3_USER_AWS_SECRET_ACCESS_KEY}" CLASSPATH="/cygdrive/c/Program\ Files/Java/jdk1.8.0_161/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=${actualDragonEnv},tibs -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Djava.endorsed.dirs=${TOMCAT_HOME}endorsed -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/cygdrive/c/Program Files/Java/jdk1.8.0_161/" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
 
-		if [ "${DRAGON_11_UPGRADE}" == "yes" ]; then
-			echo "JAVA 11 WORK USING ${TOMCAT_HOME}!!!"
-			# testing for JDK 11 / Tomcat 8.5 support - also had to remove some things like endorsed.dirs, CLASSPATH, etc.
-			JAVA_TO_USE="/Library/Java/JavaVirtualMachines/amazon-corretto-11.jdk/Contents/Home/"
-			# JAVA_TO_USE="/Library/Java/JavaVirtualMachines/openjdk-11.jdk/Contents/Home/"
-			AWS_ACCESS_KEY_ID="${S3_USER_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${S3_USER_AWS_SECRET_ACCESS_KEY}" CATALINA_OPTS="-Dspring.profiles.active=${actualDragonEnv},tibs,xmigration -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="${JAVA_TO_USE}" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
-			# maybe set JAVA_HOME like this?
-			# JAVA_HOME="$HOME/.jenv/versions/`jenv version-name`
-		else
-			echo "LAUNCHING STANDARD"
-			# current command as of 20180530
-			AWS_ACCESS_KEY_ID="${S3_USER_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${S3_USER_AWS_SECRET_ACCESS_KEY}" CLASSPATH="/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=${actualDragonEnv},tibs,xmigration -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Djava.endorsed.dirs=${TOMCAT_HOME}endorsed -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
+		if [ "no" == "yes" ]; then
+			if [ "${DRAGON_11_UPGRADE}" == "yes" ]; then
+				echo "JAVA 11 WORK USING ${TOMCAT_HOME}!!!"
+				# testing for JDK 11 / Tomcat 8.5 support - also had to remove some things like endorsed.dirs, CLASSPATH, etc.
+				JAVA_TO_USE="/Library/Java/JavaVirtualMachines/amazon-corretto-11.jdk/Contents/Home/"
+				# JAVA_TO_USE="/Library/Java/JavaVirtualMachines/openjdk-11.jdk/Contents/Home/"
+				AWS_ACCESS_KEY_ID="${S3_USER_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${S3_USER_AWS_SECRET_ACCESS_KEY}" CATALINA_OPTS="-Dspring.profiles.active=${actualDragonEnv},tibs,xmigration -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="${JAVA_TO_USE}" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
+				# maybe set JAVA_HOME like this?
+				# JAVA_HOME="$HOME/.jenv/versions/`jenv version-name`
+			else
+				echo "LAUNCHING STANDARD"
+				# current command as of 20180530
+				AWS_ACCESS_KEY_ID="${S3_USER_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${S3_USER_AWS_SECRET_ACCESS_KEY}" CLASSPATH="/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=${actualDragonEnv},tibs,xmigration -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Djava.endorsed.dirs=${TOMCAT_HOME}endorsed -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
+			fi
 		fi
 
 
 		# trying to add jvisualvm support
 		# AWS_ACCESS_KEY_ID="${S3_USER_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${S3_USER_AWS_SECRET_ACCESS_KEY}" CLASSPATH="/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=${actualDragonEnv},tibs,xmigration -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Djava.endorsed.dirs=${TOMCAT_HOME}endorsed -Dport.http=${tomcatHttpPort} -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=9090 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Djava.rmi.server.hostname=localhost -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
 
+		# current command as of 20180530
+		# AWS_ACCESS_KEY_ID="${S3_USER_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${S3_USER_AWS_SECRET_ACCESS_KEY}" CLASSPATH="/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=${actualDragonEnv},tibs,xmigration -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Djava.endorsed.dirs=${TOMCAT_HOME}endorsed -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
+
+		# current command as of 20210801
+		AWS_ACCESS_KEY_ID="${S3_USER_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${S3_USER_AWS_SECRET_ACCESS_KEY}" CATALINA_OPTS="-Dspring.profiles.active=${actualDragonEnv} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
 	else
 		echo "Bad arg to runTomcatCmd..."
 	fi

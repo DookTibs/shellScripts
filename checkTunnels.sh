@@ -8,7 +8,7 @@ echo "Searching for open ssh local port forwarding tunnels..."
 if [ "cygwin" = ${TOM_OS} ];then
 	procps all | grep "$searchString" | grep -v grep
 else
-	ps -eax | grep "$searchString" | grep -v grep
+	ps -eax | grep "$searchString" | grep -v grep | grep -v autossh
 fi
 
 if [ $? -eq 1 ]; then
