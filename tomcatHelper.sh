@@ -12,14 +12,16 @@ source sensitiveData.sh
 # this will convert to "localdev"  or "localprod" for the Spring profile...
 
 # default value
+# targetEnv="dev2021"
 targetEnv="sandbox"
+
 if [ "${2}" != "" ]; then
 	targetEnv="${2}"
 fi
 
-if [ "${targetEnv}" == "dev" ]; then
+if [ "${targetEnv}" == "dev2021" ]; then
 	dragonEnv="dev"
-	tunnelGrepper="7432"
+	tunnelGrepper="2432"
 elif [ "${targetEnv}" == "oldprod" ]; then
 	dragonEnv="oldprod"
 	tunnelGrepper="9432"
