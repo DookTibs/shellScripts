@@ -1,4 +1,6 @@
 #!/bin/bash
+echo "discontinued; see tunneler.py"
+exit 1
 # processId=`ps -eax | grep ssh.*9050.*dooktibs | grep -v grep | awk '{ print $1 }'`
 
 searchString="ssh.* -L .*$1.*$2.*$3.*$4"

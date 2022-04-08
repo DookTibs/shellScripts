@@ -5,15 +5,17 @@
 
 # todo - rewrite this to use python or something to be more modular. And then start using this for deployments.
 
-source sensitiveData.sh
-
-# echo "gonna use [${S3_USER_AWS_ACCESS_KEY_ID}] and [${S3_USER_AWS_SECRET_ACCESS_KEY}] (defined in sensitiveData.sh which should never get checked in..."
+# not needed anymore; now we get things like the AWS secrets from environment variables...
+# source sensitiveData.sh
 
 # this will convert to "localdev"  or "localprod" for the Spring profile...
 
 # default value
-# targetEnv="dev2021"
 targetEnv="sandbox"
+# targetEnv="dev"
+# targetEnv="dev2021"
+# targetEnv="prod2021"
+# targetEnv="sandbox"
 
 if [ "${2}" != "" ]; then
 	targetEnv="${2}"
@@ -31,10 +33,28 @@ elif [ "${targetEnv}" == "prod2021" ]; then
 elif [ "${targetEnv}" == "sandbox" ]; then
 	dragonEnv="sandbox"
 	tunnelGrepper="8432"
+elif [ "${targetEnv}" == "dev" ]; then
+	dragonEnv="dev"
+	tunnelGrepper="3432"
+elif [ "${targetEnv}" == "prod" ]; then
+	dragonEnv="prod"
+	tunnelGrepper="4432"
 else
 	echo "invalid environment"
 	exit 1
 fi
+
+dynamic_key_env_lookup="LITSTREAM_APP_SDK_USER_ACCESS_KEY_ID_${targetEnv}"
+dynamic_secret_env_lookup="LITSTREAM_APP_SDK_USER_SECRET_ACCESS_KEY_${targetEnv}"
+
+# note the exclamation point; I want to grab something from an environment variable,
+# but it's a dynamic name based on the environment passed into this script
+# neat trick, learned in Feb 2022, never needed this before!
+# https://stackoverflow.com/questions/9714902/how-to-use-a-variables-value-as-another-variables-name-in-bash
+aws_access_key_id="${!dynamic_key_env_lookup}"
+aws_secret_access_key="${!dynamic_secret_env_lookup}"
+echo "for '${targetEnv}', gonna use [${aws_access_key_id}] and [${aws_secret_access_key}] (defined in sensitive_data.sh which should never get checked in..."
+
 
 # see https://stackoverflow.com/questions/15555838/how-to-pass-tomcat-port-number-on-command-line
 tomcatHttpPort=8081
@@ -104,8 +124,11 @@ runTomcatCmd() {
 		# current command as of 20180530
 		# AWS_ACCESS_KEY_ID="${S3_USER_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${S3_USER_AWS_SECRET_ACCESS_KEY}" CLASSPATH="/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=${actualDragonEnv},tibs,xmigration -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Djava.endorsed.dirs=${TOMCAT_HOME}endorsed -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
 
-		# current command as of 20210801
-		AWS_ACCESS_KEY_ID="${S3_USER_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${S3_USER_AWS_SECRET_ACCESS_KEY}" CATALINA_OPTS="-Dspring.profiles.active=${actualDragonEnv} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
+		# current command as of 20220216
+		AWS_ACCESS_KEY_ID="${aws_access_key_id}" AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}" CATALINA_OPTS="-Daws_profile_for_sdk=use_this_ptofile -Dspring.profiles.active=${actualDragonEnv} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
+
+		# TRYING WITHOUT KEYS IN ENVIRONMENT
+		# CATALINA_OPTS="-Daws_profile_source_for_sdk=aws_credentials_${targetEnv} -Dspring.profiles.active=${actualDragonEnv} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
 	else
 		echo "Bad arg to runTomcatCmd..."
 	fi

@@ -3,7 +3,7 @@
 
 searchString="ssh.* -L .*$1.*$2.*$3.*$4"
 
-echo "Searching for open ssh local port forwarding tunnels..."
+echo "Searching for open ssh local port forwarding tunnels on [${searchString}]..."
 
 if [ "cygwin" = ${TOM_OS} ];then
 	procps all | grep "$searchString" | grep -v grep
