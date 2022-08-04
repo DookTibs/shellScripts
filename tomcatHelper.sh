@@ -13,6 +13,7 @@
 # default value
 targetEnv="sandbox"
 # targetEnv="dev"
+# targetEnv="prod"
 # targetEnv="dev2021"
 # targetEnv="prod2021"
 # targetEnv="sandbox"
@@ -54,6 +55,8 @@ dynamic_secret_env_lookup="LITSTREAM_APP_SDK_USER_SECRET_ACCESS_KEY_${targetEnv}
 aws_access_key_id="${!dynamic_key_env_lookup}"
 aws_secret_access_key="${!dynamic_secret_env_lookup}"
 echo "for '${targetEnv}', gonna use [${aws_access_key_id}] and [${aws_secret_access_key}] (defined in sensitive_data.sh which should never get checked in..."
+
+
 
 
 # see https://stackoverflow.com/questions/15555838/how-to-pass-tomcat-port-number-on-command-line
@@ -125,7 +128,16 @@ runTomcatCmd() {
 		# AWS_ACCESS_KEY_ID="${S3_USER_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${S3_USER_AWS_SECRET_ACCESS_KEY}" CLASSPATH="/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/lib/tools.jar" CATALINA_OPTS="-Dspring.profiles.active=${actualDragonEnv},tibs,xmigration -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Djava.endorsed.dirs=${TOMCAT_HOME}endorsed -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
 
 		# current command as of 20220216
-		AWS_ACCESS_KEY_ID="${aws_access_key_id}" AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}" CATALINA_OPTS="-Daws_profile_for_sdk=use_this_ptofile -Dspring.profiles.active=${actualDragonEnv} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
+		# AWS_ACCESS_KEY_ID="${aws_access_key_id}" AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}" CATALINA_OPTS="-Daws_profile_for_sdk=use_this_ptofile -Dspring.profiles.active=${actualDragonEnv} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
+
+		# current command as of 20220725
+		if [ "${DEBUG_LITSTREAM}" == "yes" ] && [ "${1}" == "start" ]; then
+			echo "(debug ${1}; unset environment variable DEBUG_LITSTREAM=yes if you want JPDA debugging turned off)"
+			JPDA_ADDRESS="localhost:9005" JPDA_TRANSPORT="dt_socket" AWS_ACCESS_KEY_ID="${aws_access_key_id}" AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}" CATALINA_OPTS="-Daws_profile_for_sdk=use_this_ptofile -Dspring.profiles.active=${actualDragonEnv} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" bash -c "${TOMCAT_HOME}bin/catalina.sh jpda start"
+		else
+			echo "(normal ${1}; set environment variable DEBUG_LITSTREAM=yes if you want JPDA debugging turned on)"
+			AWS_ACCESS_KEY_ID="${aws_access_key_id}" AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}" CATALINA_OPTS="-Daws_profile_for_sdk=use_this_ptofile -Dspring.profiles.active=${actualDragonEnv} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
+		fi
 
 		# TRYING WITHOUT KEYS IN ENVIRONMENT
 		# CATALINA_OPTS="-Daws_profile_source_for_sdk=aws_credentials_${targetEnv} -Dspring.profiles.active=${actualDragonEnv} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
@@ -276,7 +288,35 @@ elif [ "${1}" == "redeploy" ]; then
 
 	echo "Clearing out installed webapp from Tomcat..."
 	rm -rf ${TOMCAT_HOME}webapps/ROOT/
-	cp target/dragon-0.0.1-SNAPSHOT.war ${TOMCAT_HOME}webapps2
+
+	if [ "xhotswap" == "hotswap" ]; then
+		echo "HOT SWAPPING!"
+		# make a temp dir...
+		cd target
+		mkdir hotswap
+		cd hotswap
+
+		# unzip the war
+		cp ../dragon-0.0.1-SNAPSHOT.war .
+		unzip dragon-0.0.1-SNAPSHOT.war
+		rm dragon-0.0.1-SNAPSHOT.war
+
+		# replace some jars...
+		cp ~/Downloads/poi-src-5.2.2-20220312/build/dist/maven/poi-ooxml/poi-ooxml-5.2.2.jar ./WEB-INF/lib/
+		cp ~/Downloads/poi-src-5.2.2-20220312/build/dist/maven/poi-ooxml-lite/poi-ooxml-lite-5.2.2.jar ./WEB-INF/lib/
+		cp ~/Downloads/poi-src-5.2.2-20220312/build/dist/maven/poi/poi-5.2.2.jar ./WEB-INF/lib/
+		cp ~/Downloads/poi-src-5.2.2-20220312/build/dist/maven/poi-scratchpad/poi-scratchpad-5.2.2.jar ./WEB-INF/lib/
+
+		# re-zip it up...
+		zip -r ./hotswapped.zip *
+
+		mv hotswapped.zip ../hotswapped.war
+		cd ../..
+		cp target/hotswapped.war ${TOMCAT_HOME}webapps2/dragon-0.0.1-SNAPSHOT.war
+	else
+		cp target/dragon-0.0.1-SNAPSHOT.war ${TOMCAT_HOME}webapps2
+	fi
+
 
 	cp target/dragon-0.0.1-SNAPSHOT.war target/dragon-${currentHash}.war
 

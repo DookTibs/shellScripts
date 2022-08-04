@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import time, sys, re, json, socket, threading, SocketServer
+import time, sys, re, json, socket, threading, socketserver
 
 # class that watches a debugger log (jdb only supported one now) and 
 # fires off related updates to a connected Vim channel. See also
@@ -10,7 +10,7 @@ import time, sys, re, json, socket, threading, SocketServer
 
 thesocket = None
 
-class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
+class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         print("=== socket opened ===")
@@ -47,7 +47,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                 self.request.sendall(encoded.encode('utf-8'))
         thesocket = None
 
-class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
 # takes raw output from JDB and parses it out a bit to make it easier for Vim to handle
@@ -65,9 +65,17 @@ def createPayload(batch):
         listBreakpointsPattern = re.compile("Breakpoints set:")
         addedBreakpointPattern = re.compile("Set breakpoint (.*):(.*)")
         removedBreakpointPattern = re.compile("Removed: breakpoint (.*):(.*)")
+        stoppedPattern = re.compile("(Breakpoint hit|Step completed): \"(.*)\", (.*), line=(.*) bci=(.*)")
+
+        if (batch[0] == "> "):
+            batch = batch[1:]
 
         firstLine = batch[0]
-        print "firstLine: [" + firstLine + "]"
+        print(f"firstLine: [{firstLine}]")
+        if len(batch) > 1:
+            print(f"\ttotal additional lines: {len(batch)-1}")
+            for i in range(1, len(batch)):
+                print(f"\t[{i}]: {batch[i]}")
 
         if (listBreakpointsPattern.match(firstLine)):
             bps = [
@@ -93,6 +101,23 @@ def createPayload(batch):
                 "type": "breakpoint_removed",
                 "breakpoint": bp
             }
+        elif (stoppedPattern.match(firstLine)):
+            lazy = stoppedPattern.match(firstLine)
+            fxn = lazy.group(3)
+
+            # this MIGHT be the path to the file; Vimscript can try to open it up
+            pathGuess = fxn.replace(".", "/")
+            pathGuess = "/".join(pathGuess.split("/")[0:-1]) + ".java"
+
+            payload = {
+                "type": "execution_paused",
+                "subtype": lazy.group(1).lower(),
+                "context": lazy.group(2),
+                "possiblePartialFilePath": pathGuess,
+                "function": fxn,
+                "lineNumber": int(lazy.group(4).replace(",","")),
+                "byteCodeIndex": lazy.group(5),
+            }
 
 
     if payload == None:
@@ -115,24 +140,24 @@ def follow(thefile):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print "Usage: jdb_vim_bridge.sh <logfile> <port>"
+        print("Usage: jdb_vim_bridge.sh <logfile> <port>")
         sys.exit(1)
 
     logToWatch = sys.argv[1]
     port = int(sys.argv[2])
 
-    print "-----------------------------------------------------------------------"
-    print "If you haven't already, start jdb like \"jdb <jdbArgs> | tee -a " + logToWatch + "\""
-    print "From Vim, run \":let channel = ch_open('localhost:" + str(port) + "')\""
-    print "Runs forever; CTRL-C to exit (kill Vim channel too)"
-    print "-----------------------------------------------------------------------"
+    print("-----------------------------------------------------------------------")
+    print(f"If you haven't already, start jdb like \"jdb <jdbArgs> | tee -a {logToWatch}\"")
+    print("From NeoVim, run \":let channel = sockconnect('tcp', 'localhost:" + str(port) + "', { 'on_data': 'NameOfVimscriptFunctionToFire' })\"")
+    print("Runs forever; CTRL-C to exit (kill Vim channel too)")
+    print("-----------------------------------------------------------------------")
 
     server = ThreadedTCPServer(("localhost", port), ThreadedTCPRequestHandler)
     server_thread = threading.Thread(target=server.serve_forever)
     server_thread.daemon = True
     server_thread.start()
 
-    f = file(logToWatch)
+    f = open(logToWatch)
 
     # jdb shows a ">" to user. Commands are entered. It then spits a bunch of stuff out and 
     # prints a prompt again. We can use this to determine end of output and buffer it up
@@ -147,9 +172,10 @@ if __name__ == "__main__":
         l = l[:-1]
         if (l == endOfOutput or altRegex.match(l) ):
             bufferedOutput = [line.replace("\t", "").replace("\r", "") for line in bufferedOutput]
-            bufferedOutput = filter(lambda x: x.strip() != "", bufferedOutput) # strip empty lines
+            bufferedOutput = list(filter(lambda x: x.strip() != "", bufferedOutput)) # strip empty lines
             if (len(bufferedOutput) > 0):
                 payload = createPayload(bufferedOutput)
+                """
                 message = [
                     "call",
                     "MyHandler",
@@ -157,14 +183,16 @@ if __name__ == "__main__":
                         json.dumps(payload) # we need to encode this again for Vim to like it
                     ]
                 ]
+                """
+                message = { "parsed_data": payload }
 
                 encoded = json.dumps(message)
 
                 if thesocket is None:
                     print("No socket yet. Message would have been:")
-                    print encoded
+                    print(encoded)
                 else:
-                    print "Sending " + encoded
+                    print(f"Sending {encoded}")
                     thesocket.sendall(encoded.encode('utf-8'))
             bufferedOutput = []
         else:
