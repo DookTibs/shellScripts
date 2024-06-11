@@ -14,17 +14,20 @@ cd $DRAGON_HOME/src/main/java/
 ctags -f .dragonOnlineJavaTags -R .
 echo "done!"
 
-echo -n "Regenerating cscope db..."
-cd $DRAGON_HOME/src/main/java/
+# 202208 - not sure what this part does anymore?!?!?
+if [ 1 -eq 2 ]; then
+	echo -n "Regenerating cscope db..."
+	cd $DRAGON_HOME/src/main/java/
 
-# needed for cygwin only
-# find "$PWD"/ -name "*.java" > tempFileNotFixed
-# sed 's-/cygdrive/c/-c:/-' tempFileNotFixed > tempFile
+	# needed for cygwin only
+	# find "$PWD"/ -name "*.java" > tempFileNotFixed
+	# sed 's-/cygdrive/c/-c:/-' tempFileNotFixed > tempFile
 
-# osx version
-find "$PWD"/ -name "*.java" > tempFile
+	# osx version
+	find "$PWD"/ -name "*.java" > tempFile
 
-gtags -f tempFile
-rm tempFile*
+	gtags -f tempFile
+	rm tempFile*
+fi
 
 echo "done!"

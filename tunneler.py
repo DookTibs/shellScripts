@@ -19,6 +19,14 @@ except:
 # 2021 suffixes are for the old account -- plain old dev/prod are the new Managed Services account
 
 environments = {
+    "unittest": {
+        "description": "on dev AWS account; environment used for Max unittesting, set up in 2024. does not use a unique redis.",
+        "postgres": "litstream-test-pg.cf6dwigysdv2.us-east-1.rds.amazonaws.com:5432",
+        "elasticache": "litstream-dev-elcache.4kd8tg.0001.use1.cache.amazonaws.com:6379",
+        "jumpbox": "dev_jumpbox",
+        "pg_tunnel_port": 9432,
+        "elasticache_tunnel_port": 9748
+    },
     "dev": {
         "description": "New Managed Services dev environment, set up in Jan 2022",
         "postgres": "litstream-dev-pg.cf6dwigysdv2.us-east-1.rds.amazonaws.com:5432",
@@ -69,7 +77,19 @@ environments = {
         "postgres": "emut-prod-psql.c9bgatqk4une.us-east-1.rds.amazonaws.com:5432",
         "jumpbox": "prod_embsi_jumpbox",
         "pg_tunnel_port": 6472,
-    }
+    },
+    "litmc_dev": {
+        "description": "New Managed Services dev environment, set up in Dec 2021",
+        "postgres": "litemcee-dev-psql.cf6dwigysdv2.us-east-1.rds.amazonaws.com:5432",
+        "jumpbox": "dev_litmc_jumpbox",
+        "pg_tunnel_port": 6420,
+    },
+    "pytrim_dev": {
+        "description": "PyTRIM (not actually Postgres, it's MySQL, but this works)",
+        "postgres": "pytrim-dev-stalk-mysql.c4kmy933ys6z.us-east-1.rds.amazonaws.com:3306",
+        "jumpbox": "pytrim_dev_jumpbox",
+        "pg_tunnel_port": 6603,
+    },
 }
 
 MONITOR_PORT_START = 20000
@@ -89,7 +109,7 @@ class TunnelUtil(object):
         for process in psutil.process_iter():
             process_as_string = str(process)
             if "autossh" in process_as_string:
-                # print(f"RUNNING {process.cmdline()}")
+                print(f"RUNNING {process.cmdline()}")
                 tunnels.append(process)
 
         return tunnels
@@ -183,7 +203,7 @@ class TunnelUtil(object):
 
             if len(running_tunnel_names) > 0:
                 readable_names = [f"'{x}'" for x in running_tunnel_names]
-                print(f"Tunnels are currently opened for litstream {', '.join(readable_names)}")
+                print(f"Tunnels are currently opened for (litstream default) {', '.join(readable_names)}")
             else:
                 print("No tunnels are currently open.")
         else:

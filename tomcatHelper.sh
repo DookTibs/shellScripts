@@ -11,12 +11,12 @@
 # this will convert to "localdev"  or "localprod" for the Spring profile...
 
 # default value
-targetEnv="sandbox"
+# targetEnv="prod"
 # targetEnv="dev"
 # targetEnv="prod"
 # targetEnv="dev2021"
 # targetEnv="prod2021"
-# targetEnv="sandbox"
+targetEnv="sandbox"
 
 if [ "${2}" != "" ]; then
 	targetEnv="${2}"
@@ -131,12 +131,15 @@ runTomcatCmd() {
 		# AWS_ACCESS_KEY_ID="${aws_access_key_id}" AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}" CATALINA_OPTS="-Daws_profile_for_sdk=use_this_ptofile -Dspring.profiles.active=${actualDragonEnv} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
 
 		# current command as of 20220725
+		# maintenanceModeSnippet="-Dlitstream_maintenance_descriptor=2022-12-09_1200:'explanation goes here'"
+		maintenanceModeSnippet="-Dlitstream_maintenance_descriptor="
+		# maintenanceModeSnippet="-Dlitstream_maintenance_descriptor=2023-02-10_1700"
 		if [ "${DEBUG_LITSTREAM}" == "yes" ] && [ "${1}" == "start" ]; then
 			echo "(debug ${1}; unset environment variable DEBUG_LITSTREAM=yes if you want JPDA debugging turned off)"
-			JPDA_ADDRESS="localhost:9005" JPDA_TRANSPORT="dt_socket" AWS_ACCESS_KEY_ID="${aws_access_key_id}" AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}" CATALINA_OPTS="-Daws_profile_for_sdk=use_this_ptofile -Dspring.profiles.active=${actualDragonEnv} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" bash -c "${TOMCAT_HOME}bin/catalina.sh jpda start"
+			JPDA_ADDRESS="localhost:9005" JPDA_TRANSPORT="dt_socket" AWS_ACCESS_KEY_ID="${aws_access_key_id}" AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}" CATALINA_OPTS="-Daws_profile_for_sdk=use_this_ptofile -Dspring.profiles.active=${actualDragonEnv},override:tfeiler ${maintenanceModeSnippet} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252 -DtosVersion=20220329" bash -c "${TOMCAT_HOME}bin/catalina.sh jpda start"
 		else
 			echo "(normal ${1}; set environment variable DEBUG_LITSTREAM=yes if you want JPDA debugging turned on)"
-			AWS_ACCESS_KEY_ID="${aws_access_key_id}" AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}" CATALINA_OPTS="-Daws_profile_for_sdk=use_this_ptofile -Dspring.profiles.active=${actualDragonEnv} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
+			AWS_ACCESS_KEY_ID="${aws_access_key_id}" AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}" CATALINA_OPTS="-Daws_profile_for_sdk=use_this_ptofile -Dspring.profiles.active=${actualDragonEnv},override:tfeiler ${maintenanceModeSnippet} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252 -DtosVersion=20220329" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
 		fi
 
 		# TRYING WITHOUT KEYS IN ENVIRONMENT

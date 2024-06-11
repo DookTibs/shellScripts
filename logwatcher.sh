@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # python script that watches a log file (file must exist!).
 # when it sees matching text, it exits and prints that line.
@@ -20,7 +20,7 @@ def follow(thefile):
         yield line
 
 if len(sys.argv) != 3:
-    print "Usage: logwatcher.sh <logfile> <searchPattern>"
+    print("Usage: logwatcher.sh <logfile> <searchPattern>")
     sys.exit(1)
 
 logToWatch = sys.argv[1]
@@ -28,7 +28,8 @@ searchPattern = sys.argv[2]
 
 # print "Watching '" + logToWatch + "' for '" + searchPattern + "'"
 
-f = file(logToWatch)
+# f = file(logToWatch)
+f = open(logToWatch)
 
 regex = re.compile(searchPattern)
 
@@ -39,4 +40,4 @@ for l in follow(f):
         targetLine = l
         break
 
-print targetLine
+print(targetLine)

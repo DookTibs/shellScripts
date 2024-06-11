@@ -48,7 +48,9 @@ do
 	# this works on OSX - sometimes there's a garbage cahracter, sometimes not.
 	# verify that the echo looks right
 	cf=`echo $cf | sed 's/[^a]$//'`
-	# echo "Input file: $cf"
 
-	awk -v PAD_WIDTH=${padWidth} -f ~/development/shellScripts/endpointHelper.awk "$cf"
+	# which gawk
+	# gawk --version
+	# Nov 2023 -- homebrew updated and "awk" busted -- switched to use gawk explicitly
+	gawk -v PAD_WIDTH=${padWidth} -f ~/development/shellScripts/endpointHelper.awk "$cf"
 done
