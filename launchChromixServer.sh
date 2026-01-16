@@ -1,4 +1,6 @@
 #!/bin/sh
 # cd "$CHROMIX"
 # node server.js
-chromix-too-server
+
+echo "June 2024 - chromix browser extension no longer available so disabling launch; need to rethink how this works..."
+# chromix-too-server
