@@ -13,5 +13,5 @@
 #
 #
 git diff --name-only "$@" | while read filename; do
-    git difftool -t bc3 "$@" --no-prompt "$filename" &
+    git difftool -t bcomp "$@" --no-prompt "$filename" &
 done
