@@ -52,9 +52,11 @@ dynamic_secret_env_lookup="LITSTREAM_APP_SDK_USER_SECRET_ACCESS_KEY_${targetEnv}
 # but it's a dynamic name based on the environment passed into this script
 # neat trick, learned in Feb 2022, never needed this before!
 # https://stackoverflow.com/questions/9714902/how-to-use-a-variables-value-as-another-variables-name-in-bash
-aws_access_key_id="${!dynamic_key_env_lookup}"
-aws_secret_access_key="${!dynamic_secret_env_lookup}"
-echo "for '${targetEnv}', gonna use [${aws_access_key_id}] and [${aws_secret_access_key}] (defined in sensitive_data.sh which should never get checked in..."
+
+# aws_access_key_id="${!dynamic_key_env_lookup}"
+# aws_secret_access_key="${!dynamic_secret_env_lookup}"
+# echo "for '${targetEnv}', gonna use [${aws_access_key_id}] and [${aws_secret_access_key}] (defined in sensitive_data.sh which should never get checked in..."
+echo "for '${targetEnv}', MAKE SURE YOU ARE SSO'ED IN!!!!!!!!!"
 
 
 
@@ -66,7 +68,11 @@ if [ ! -z "${3}" ]; then
 fi
 # tomcatShutdownPort=$(($tomcatHttpPort + 10))
 
-openTunnels=`checkTunnels.sh | grep "$tunnelGrepper:.*_jumpbox" | wc -l`
+# openTunnels=`checkTunnels.sh | grep "$tunnelGrepper:.*_jumpbox" | wc -l`
+# modified now that we use SSM to tunnel...
+# grep for tunnels opened via my shellscript. wrap in $(()) to cast to int. subtract 1 to account for the grep command itself appearing in the list piped to wc -l
+openTunnels=$((`ps -eax | grep "ssm_tunneler.*litstream_${dragonEnv}" | wc -l`))
+openTunnels=$(($openTunnels - 1))
 if [ $openTunnels -ne 1 ]; then
 	echo "$openTunnels tunnels found running for dragon env '$dragonEnv'."
 
@@ -138,8 +144,10 @@ runTomcatCmd() {
 			echo "(debug ${1}; unset environment variable DEBUG_LITSTREAM=yes if you want JPDA debugging turned off)"
 			JPDA_ADDRESS="localhost:9005" JPDA_TRANSPORT="dt_socket" AWS_ACCESS_KEY_ID="${aws_access_key_id}" AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}" CATALINA_OPTS="-Daws_profile_for_sdk=use_this_ptofile -Dspring.profiles.active=${actualDragonEnv},override:tfeiler ${maintenanceModeSnippet} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252 -DtosVersion=20220329" bash -c "${TOMCAT_HOME}bin/catalina.sh jpda start"
 		else
-			echo "(normal ${1}; set environment variable DEBUG_LITSTREAM=yes if you want JPDA debugging turned on)"
-			AWS_ACCESS_KEY_ID="${aws_access_key_id}" AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}" CATALINA_OPTS="-Daws_profile_for_sdk=use_this_ptofile -Dspring.profiles.active=${actualDragonEnv},override:tfeiler ${maintenanceModeSnippet} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252 -DtosVersion=20220329" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
+			# echo "(normal ${1}; set environment variable DEBUG_LITSTREAM=yes if you want JPDA debugging turned on)"
+			# AWS_ACCESS_KEY_ID="${aws_access_key_id}" AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}" CATALINA_OPTS="-Daws_profile_for_sdk=use_this_ptofile -Dspring.profiles.active=${actualDragonEnv},override:tfeiler ${maintenanceModeSnippet} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252 -DtosVersion=20220329" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
+			echo "rely on system settings instead..."
+			CATALINA_OPTS="-Daws_profile_for_sdk=use_this_ptofile -Dspring.profiles.active=${actualDragonEnv},override:tfeiler ${maintenanceModeSnippet} -Ddragon.tierType=web -DbaseUrl=http://localhost:${tomcatHttpPort} -Dport.http=${tomcatHttpPort} -XX:+CMSClassUnloadingEnabled -Dfile.encoding=Cp1252 -DtosVersion=20220329" bash -c "${TOMCAT_HOME}bin/catalina.sh $1"
 		fi
 
 		# TRYING WITHOUT KEYS IN ENVIRONMENT
