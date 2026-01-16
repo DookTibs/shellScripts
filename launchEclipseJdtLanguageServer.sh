@@ -1,9 +1,9 @@
 #!/bin/bash
-cd /Users/tfeiler/development/tools/eclipse.jdt.ls
+cd $HOME/development/tools/eclipse.jdt.ls
 
 LSP_CONFIG="config_mac"
-# LSP_DATA_ROOT="/Users/tfeiler/development/icf_dragon/"
-LSP_DATA_ROOT="/Users/tfeiler/development/tools/eclipse-workspace"
+# LSP_DATA_ROOT="$HOME/development/icf_dragon/"
+LSP_DATA_ROOT="$HOME/development/tools/eclipse-workspace"
 
 cd org.eclipse.jdt.ls.product/target/repository
 # find the right jar to use
