@@ -42,7 +42,7 @@ on run argv
 	-- commandline argument processing: END
 
 	if speakerName is not null
-		-- log "PROCEED: speaker=[" & speakerName & "]; vol=[" & volumeCmd & "]; activation=[" & activationCmd & "]; source=[" & sourceName & "]; singleLogic=[" & singleSpeakerLogic & "]"
+		# log "PROCEED: speaker=[" & speakerName & "]; vol=[" & volumeCmd & "]; activation=[" & activationCmd & "]; source=[" & sourceName & "]; singleLogic=[" & singleSpeakerLogic & "]"
 
 		tell application "Airfoil"
 			set targetSpeaker to null
@@ -55,14 +55,29 @@ on run argv
 			-- set foo to get speaker whose name is "Feiler Blue HomePod Mini"
 			repeat with a from 1 to length of allSpeakerOptions
 				set speakerOption to item a of allSpeakerOptions
+
+				# h/t https://stackoverflow.com/questions/997828/is-there-something-akin-to-regex-in-applescript-and-if-not-whats-the-alternat
+				set thecommandstring to "echo \"" & (name of speakerOption) & "\"|sed \"s/" & speakerName & "/*GOODGOODGOOD*(&)/\"" as string
+				set sedResult to do shell script thecommandstring
+				set isRegexMatch to sedResult starts with "*GOODGOODGOOD*"
+				# log "CMD = [" & thecommandstring & "] -> [" & isRegexMatch & "][" & sedResult & "]"
+
+				# log "LOOP name is " & name of speakerOption
 				
-				if name of speakerOption is speakerName then
+				# if name of speakerOption is speakerName then
+					# log "EXACT MATCH!"
+				if isRegexMatch then
+					# log "MATCH  ON " & (name of speakerOption)
 					set targetSpeaker to speakerOption
 				else
 					set end of otherSpeakers to speakerOption
 				end if
-				-- log "looping on speaker: " & (name of speakerOption)
+
+				# log "looping on speaker: " & (name of speakerOption)
 			end repeat
+
+			# i can't print this out?
+			# log "speakerName == " & speakerName & "; target speaker == " & targetSpeaker
 
 			-- activate/toggle/etc. or update volume of the speaker
 			if targetSpeaker is not null then
