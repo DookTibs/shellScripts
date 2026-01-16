@@ -86,9 +86,34 @@ environments = {
     },
     "pytrim_dev": {
         "description": "PyTRIM (not actually Postgres, it's MySQL, but this works)",
-        "postgres": "pytrim-dev-stalk-mysql.c4kmy933ys6z.us-east-1.rds.amazonaws.com:3306",
+        # "postgres": "pytrim-dev-stalk-mysql.c4kmy933ys6z.us-east-1.rds.amazonaws.com:3306",
+        "postgres": "pytrim-v2-mysql.c4kmy933ys6z.us-east-1.rds.amazonaws.com:3306",
         "jumpbox": "pytrim_dev_jumpbox",
         "pg_tunnel_port": 6603,
+    },
+    "pytrim_devgetflow": {
+        "description": "PyTRIM GetFlow",
+        "postgres": "getflow-20250813-mysql.c4kmy933ys6z.us-east-1.rds.amazonaws.com:3306",
+        "jumpbox": "pytrim_getflowtemp_jumpbox",
+        "pg_tunnel_port": 6604,
+    },
+    "langqs_dev_tfeiler": {
+        "description": "LangQS Dev-for-Tom instance",
+        "postgres": "langqs-dev-tfeiler-20241017-pg.c9gckogks00z.us-east-1.rds.amazonaws.com:5432",
+        "jumpbox": "langqs_dev_tfeiler_jumpbox",
+        "pg_tunnel_port": 6740,
+    },
+    "langqs_uat": {
+        "description": "LangQS UAT instance",
+        "postgres": "langqs-uat-20241011-pg.c9gckogks00z.us-east-1.rds.amazonaws.com:5432",
+        "jumpbox": "langqs_uat_jumpbox",
+        "pg_tunnel_port": 6730,
+    },
+    "langqs_prod": {
+        "description": "LangQS Prod instance",
+        "postgres": "heed-langqs-prod-pg.c412qe6aymfe.us-east-1.rds.amazonaws.com:5432",
+        "jumpbox": "langqs_prod_jumpbox",
+        "pg_tunnel_port": 6710,
     },
 }
 

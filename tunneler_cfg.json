@@ -1,0 +1,167 @@
+{
+	"_session_manager_plugin": "/Users/38593/",
+	"environments": {
+		"litstream_sandbox": {
+			"description": "litstream sandbox (developer works-in-progress) db on new Managed Services staging account, set up in March 2022",
+			"tunnel_destinations": [
+				{
+					"descriptor": "postgres",
+					"host": "litstream-sandbox-pg.cf6dwigysdv2.us-east-1.rds.amazonaws.com",
+					"port": 5432,
+					"tunnel_port": 8432
+				},
+				{
+					"descriptor": "redis/elasticache",
+					"host": "litstream-sandbox-elcache.4kd8tg.0001.use1.cache.amazonaws.com",
+					"port": 6379,
+					"tunnel_port": 9736
+				}
+			],
+			"ssm": {
+				"sso_session": "litstream_staging_tempadministrator_sso",
+				"bastion": "i-01301022372f0c940"
+			}
+		},
+
+		"litstream_dev": {
+			"description": "litstream New Managed Services dev environment, set up in Jan 2022",
+			"tunnel_destinations": [
+				{
+					"descriptor": "postgres",
+					"host": "litstream-dev-pg.cf6dwigysdv2.us-east-1.rds.amazonaws.com",
+					"port": 5432,
+					"tunnel_port": 3432
+				},
+				{
+					"descriptor": "redis/elasticache",
+					"host": "litstream-dev-elcache.4kd8tg.0001.use1.cache.amazonaws.com",
+					"port": 6379,
+					"tunnel_port": 9750
+				}
+			],
+
+			"ssm": {
+				"sso_session": "litstream_staging_tempadministrator_sso",
+				"bastion": "i-01301022372f0c940"
+			}
+		},
+
+		"litstream_unittest": {
+			"description": "litstream on dev AWS account; environment used for Max unittesting, set up in 2024. does not use a unique redis.",
+			"tunnel_destinations": [
+				{
+					"descriptor": "postgres",
+					"_host": "litstream-test-pg.cf6dwigysdv2.us-east-1.rds.amazonaws.com",
+					"host": "litstream-unittest1-pg.cf6dwigysdv2.us-east-1.rds.amazonaws.com",
+					"port": 5432,
+					"tunnel_port": 9432
+				},
+				{
+					"descriptor": "redis/elasticache",
+					"host": "litstream-dev-elcache.4kd8tg.0001.use1.cache.amazonaws.com",
+					"port": 6379,
+					"tunnel_port": 9748
+				}
+			],
+			"ssm": {
+				"sso_session": "litstream_staging_tempadministrator_sso",
+				"bastion": "i-01301022372f0c940"
+			}
+		},
+
+		"litstream_prod": {
+			"description": "litstream New Managed Services prod environment, set up in Dec 2021",
+			"tunnel_destinations": [
+				{
+					"descriptor": "postgres",
+					"host": "litstream-prod-pg.c42oobxvr0vm.us-east-1.rds.amazonaws.com",
+					"port": 5432,
+					"tunnel_port": 4432
+				},
+				{
+					"descriptor": "redis/elasticache",
+					"host": "litstream-prod-elcache.lqsovj.0001.use1.cache.amazonaws.com",
+					"port": 6379,
+					"tunnel_port": 9752
+				}
+			],
+
+			"remote_host_aliases": {
+				"litstream-prod-automated-backups-ec2instance": "nightlybackups"
+			},
+
+			"ssm": {
+				"sso_session": "litstream_prod_fullaccess_sso",
+				"bastion": "i-0cb539b796e5c12a8"
+			}
+		},
+
+		"pytrim_test": {
+			"description": "PyTRIM test mysql",
+			"tunnel_destinations": [
+				{
+					"descriptor": "mysql",
+					"host": "pytrim-test-mysql.c4kmy933ys6z.us-east-1.rds.amazonaws.com",
+					"port": 3306,
+					"tunnel_port": 6603
+				}
+			],
+
+			"ssm": {
+				"sso_session": "pytrim_dev_tempadmin_sso",
+				"bastion": "i-06e86dd5d5b21c42c"
+			}
+		},
+
+		"langqs_dev_tfeiler": {
+			"description": "LangQS Dev-for-Tom instance",
+			"tunnel_destinations": [
+				{
+					"descriptor": "postgres",
+					"host": "langqs-dev-tfeiler-20241017-pg.c9gckogks00z.us-east-1.rds.amazonaws.com",
+					"port": 5432,
+					"tunnel_port": 6740
+				}
+			],
+
+			"ssm": {
+				"sso_session": "sphere_langqs_staging_managed_temp_admin_sso",
+				"bastion": "i-0f4cb344e270c63da"
+			}
+		},
+
+		"langqs_uat": {
+			"description": "LangQS UAT instance",
+			"tunnel_destinations": [
+				{
+					"descriptor": "postgres",
+					"host": "langqs-uat-20241011-pg.c9gckogks00z.us-east-1.rds.amazonaws.com",
+					"port": 5432,
+					"tunnel_port": 6730
+				}
+			],
+
+			"ssm": {
+				"sso_session": "sphere_langqs_staging_managed_temp_admin_sso",
+				"bastion": "i-02a35c48b09926990"
+			}
+		},
+
+		"langqs_prod": {
+			"description": "LangQS Prod",
+			"tunnel_destinations": [
+				{
+					"descriptor": "postgres",
+					"host": "heed-langqs-prod-pg.c412qe6aymfe.us-east-1.rds.amazonaws.com",
+					"port": 5432,
+					"tunnel_port": 6710
+				}
+			],
+
+			"ssm": {
+				"sso_session": "sphere_langqs_prod_fulladmin_sso",
+				"bastion": "i-068933654df118780"
+			}
+		}
+	}
+}
