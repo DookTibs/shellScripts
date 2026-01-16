@@ -12,6 +12,16 @@
 echo -n "Regenerating ctags for DRAGON Online..."
 cd $DRAGON_HOME/src/main/java/
 ctags -f .dragonOnlineJavaTags -R .
+# output in JSON?
+# see https://docs.ctags.io/en/latest/man/ctags-json-output.5.html
+echo -n "Regenerating JSON format too..."
+rm .tibsJsonTags
+ctags -R --output-format=json --fields="+n" -f .tibsJsonTags
+
+# 20260116 note - I don't appear to be actually using this json version anywhere...I suspect I was experimenting it
+# and never got very far? Leaving it in here but turn off if you like. (e.g. my current neovim is still just using 
+# .dragonOnlineJavaTags for code nav.
+
 echo "done!"
 
 # 202208 - not sure what this part does anymore?!?!?
