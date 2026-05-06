@@ -53,6 +53,8 @@ processingAnnotation == 1 && match($1, /)/) {
 	# print (pastClassDeclaration == 1 ? "method: " : "class: ") currAnnotation
 	hasValueAttribute = match(currAnnotation, /value *= *"([{}a-zA-Z\/.]*)"/, a)
 
+	multipleMappings = ""
+
 	valueAttribute = ""
 	if (hasValueAttribute > 0) {
 		valueAttribute = a[1]
@@ -60,7 +62,27 @@ processingAnnotation == 1 && match($1, /)/) {
 		if (match(currAnnotation, /\( *"([{}a-zA-Z\/.]*)" *\)/, a)) {
 			valueAttribute = a[1]
 		}
+
+		# in spring 2026 we had to rewrite things for Spring.  lines like:
+		# @RequestMapping(value = "/steps", method = RequestMethod.GET)
+		#
+		# were rewritten as:
+		# @RequestMapping(value = {"/steps", "/steps/"}, method...
+		#
+		# the above match doesn't find these! So let's do a bunch of horribly inefficient sub commands
+		# to just grab the first version (e.g. "/steps") and we'll leave the rest of the script alone...
+		if (match(currAnnotation, /({ *"[^"]*".*})/, a)) {
+			multipleMappings = " !!"
+			valueAttribute = a[1]
+			sub(/,.*/, "", valueAttribute) # if there's a comma, just take the first one
+			sub(/}$/, "", valueAttribute) # if there was no comma, strip the trailing }
+			sub(/{/, "", valueAttribute) # strip the leading {
+			sub(/^[^"]*/, "", valueAttribute) # get anything before the start of the quote
+			sub(/^"/, "", valueAttribute) # strip leading quote
+			sub(/"$/, "", valueAttribute) # strip trailing quote
+		}
 	}
+	# print "'" currControllerPath "' -- line [" NR "]/[" hasValueAttribute "] VA: " valueAttribute
 
 	path = ""
 	if (valueAttribute != "") {
@@ -86,7 +108,7 @@ processingAnnotation == 1 && match($1, /)/) {
 			method = "POST"
 		}
 
-		output = path " (" method ")"
+		output = path " (" method ")" multipleMappings
 		while (length(output) < lhsLen) {
 			output = output " "
 		}
@@ -95,4 +117,11 @@ processingAnnotation == 1 && match($1, /)/) {
 
 		print output
 	}
+}
+
+END {
+	print "----------"
+	print "!! indicates an endpoint where multiple RequestMapping values were found mapped to a function."
+	print "   e.g. '@RequestMapping(value = {\"/steps\", \"/steps/\"}, method = RequestMethod.GET)'"
+	print "   Only the first such value (e.g. '/steps') was printed out above to maintain brevity/sanity."
 }
